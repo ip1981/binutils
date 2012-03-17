@@ -2718,7 +2718,10 @@ You can change the behaviour of @command{ld} with the environment variables
 @ifclear SingleFormat
 @code{GNUTARGET},
 @end ifclear
-@code{LDEMULATION} and @code{COLLECT_NO_DEMANGLE}.
+@code{LDEMULATION},
+@code{COLLECT_NO_DEMANGLE}
+and
+@code{LD_ALTEXEC}.
 
 @ifclear SingleFormat
 @kindex GNUTARGET
@@ -2755,6 +2758,12 @@ default to not demangling symbols.  This environment variable is used in
 a similar fashion by the @code{gcc} linker wrapper program.  The default
 may be overridden by the @samp{--demangle} and @samp{--no-demangle}
 options.
+
+@kindex LD_ALTEXEC
+@cindex alternative linker
+@code{LD_ALTEXEC} sets alternative linker. @command{ld} executes,
+and passes control to this alternative linker. For instance one
+can set @code{LD_ALTEXEC=echo} to debug linker command line.
 
 @c man end
 @end ifset

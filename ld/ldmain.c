@@ -52,6 +52,7 @@
 #endif
 
 #include <string.h>
+#include <errno.h>
 
 #ifdef HAVE_SBRK
 #if !HAVE_DECL_SBRK
@@ -173,11 +174,37 @@ ld_cleanup (void)
     unlink_if_ordinary (output_filename);
 }
 
+static void
+maybe_altexec(char **argv)
+{
+  char *LD_ALTEXEC;
+
+  /* If LD_ALTEXEC is not set or is empty, just return */
+  LD_ALTEXEC = getenv("LD_ALTEXEC");
+  if (LD_ALTEXEC == NULL)
+    return;
+
+  if (*LD_ALTEXEC == '\0')
+    return;
+
+  /* Unset LD_ALTEXEC for case when it points to this program itself ;-) */
+  if (unsetenv("LD_ALTEXEC"))
+    exit(errno);
+
+  argv[0] = LD_ALTEXEC;
+  execvp(LD_ALTEXEC, argv);
+
+  /* We are here only if execvp() failed */
+  exit(errno);
+}
+
 int
 main (int argc, char **argv)
 {
   char *emulation;
   long start_time = get_run_time ();
+
+  maybe_altexec(argv);
 
 #if defined (HAVE_SETLOCALE) && defined (HAVE_LC_MESSAGES)
   setlocale (LC_MESSAGES, "");
