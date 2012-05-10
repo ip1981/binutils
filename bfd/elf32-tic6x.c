@@ -2327,9 +2327,9 @@ elf32_tic6x_relocate_section (bfd *output_bfd,
 				   unresolved_reloc, warned);
 	}
 
-      if (sec != NULL && elf_discarded_section (sec))
+      if (sec != NULL && discarded_section (sec))
 	RELOC_AGAINST_DISCARDED_SECTION (info, input_bfd, input_section,
-					 rel, relend, howto, contents);
+					 rel, 1, relend, howto, 0, contents);
 
       if (info->relocatable)
 	{
@@ -4010,6 +4010,9 @@ elf32_tic6x_merge_private_bfd_data (bfd *ibfd, bfd *obfd)
 {
   if (!_bfd_generic_verify_endian_match (ibfd, obfd))
     return FALSE;
+
+  if (! is_tic6x_elf (ibfd) || ! is_tic6x_elf (obfd))
+    return TRUE;
 
   if (!elf32_tic6x_merge_attributes (ibfd, obfd))
     return FALSE;

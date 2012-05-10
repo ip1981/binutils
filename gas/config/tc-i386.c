@@ -4353,8 +4353,9 @@ check_reverse:
 	  err_msg = _("unsupported syntax");
 	  break;
 	case unsupported:
-	  err_msg = _("unsupported");
-	  break;
+	  as_bad (_("unsupported instruction `%s'"),
+		  current_templates->start->name);
+	  return NULL;
 	case invalid_vsib_address:
 	  err_msg = _("invalid VSIB address");
 	  break;
@@ -6217,7 +6218,7 @@ output_insn (void)
       unsigned int prefix;
 
       /* Since the VEX prefix contains the implicit prefix, we don't
-	  need the explicit prefix.  */
+	 need the explicit prefix.  */
       if (!i.tm.opcode_modifier.vex)
 	{
 	  switch (i.tm.opcode_length)
@@ -6256,8 +6257,7 @@ check_prefix:
 	    if (*q)
 	      FRAG_APPEND_1_CHAR (*q);
 	}
-
-      if (i.tm.opcode_modifier.vex)
+      else
 	{
 	  for (j = 0, q = i.prefix; j < ARRAY_SIZE (i.prefix); j++, q++)
 	    if (*q)
@@ -9173,6 +9173,16 @@ tc_gen_reloc (asection *section ATTRIBUTE_UNUSED, fixS *fixp)
       if (disallow_64bit_reloc)
 	switch (code)
 	  {
+	  case BFD_RELOC_64:
+	    /* Check addend overflow.  */
+	    if (!fits_in_signed_long (fixp->fx_offset))
+	      {
+		as_bad_where (fixp->fx_file, fixp->fx_line,
+			      _("cannot represent relocation %s with addend %lld in x32 mode"),
+			      bfd_get_reloc_code_name (code),
+			      (long long) fixp->fx_offset);
+	      }
+	    break;
 	  case BFD_RELOC_X86_64_DTPOFF64:
 	  case BFD_RELOC_X86_64_TPOFF64:
 	  case BFD_RELOC_64_PCREL:

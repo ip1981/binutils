@@ -108,8 +108,8 @@ static char *v9_hpriv_reg_names[] =
 static char *v9a_asr_reg_names[] =
 {
   "pcr", "pic", "dcr", "gsr", "set_softint", "clear_softint",
-  "softint", "tick_cmpr", "stick", "stick_cmpr", "resv26",
-  "resv27", "cps"
+  "softint", "tick_cmpr", "stick", "stick_cmpr", "cfr",
+  "pause", "cps"
 };
 
 /* Macros used to extract instruction fields.  Not all fields have
@@ -129,6 +129,7 @@ static char *v9a_asr_reg_names[] =
 
 /* These are for v9.  */
 #define X_DISP16(i)  (((((i) >> 20) & 3) << 14) | (((i) >> 0) & 0x3fff))
+#define X_DISP10(i)  (((((i) >> 19) & 3) << 8) | (((i) >> 5) & 0xff))
 #define X_DISP19(i)  (((i) >> 0) & 0x7ffff)
 #define X_MEMBAR(i)  ((i) & 0x7f)
 
@@ -703,6 +704,10 @@ print_insn_sparc (bfd_vma memaddr, disassemble_info *info)
 		    }
 		    break;
 
+		  case ')':	/* 5 bit unsigned immediate from RS3.  */
+		    (info->fprintf_func) (stream, "%#x", X_RS3 (insn));
+		    break;
+
 		  case 'X':	/* 5 bit unsigned immediate.  */
 		  case 'Y':	/* 6 bit unsigned immediate.  */
 		    {
@@ -742,6 +747,11 @@ print_insn_sparc (bfd_vma memaddr, disassemble_info *info)
 			  }
 		      break;
 		    }
+
+		  case '=':
+		    info->target = memaddr + SEX (X_DISP10 (insn), 10) * 4;
+		    (*info->print_address_func) (info->target, info);
+		    break;
 
 		  case 'k':
 		    info->target = memaddr + SEX (X_DISP16 (insn), 16) * 4;

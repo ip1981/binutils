@@ -739,6 +739,9 @@ class General_options
               N_("Export all dynamic symbols"),
 	      N_("Do not export all dynamic symbols (default)"));
 
+  DEFINE_set(export_dynamic_symbol, options::TWO_DASHES, '\0',
+	     N_("Export SYMBOL to dynamic symbol table"), N_("SYMBOL"));
+
   DEFINE_special(EB, options::ONE_DASH, '\0',
 		 N_("Link big-endian objects."), NULL);
 
@@ -790,6 +793,10 @@ class General_options
 
   DEFINE_bool(g, options::EXACTLY_ONE_DASH, '\0', false,
 	      N_("Ignored"), NULL);
+
+  DEFINE_bool(gdb_index, options::TWO_DASHES, '\0', false,
+	      N_("Generate .gdb_index section"),
+	      N_("Do not generate .gdb_index section"));
 
   DEFINE_bool(gnu_unique, options::TWO_DASHES, '\0', true,
 	      N_("Enable STB_GNU_UNIQUE symbol binding (default)"),

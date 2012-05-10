@@ -1,3 +1,250 @@
+2012-05-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/tc-i386.c (tc_gen_reloc): Use fits_in_signed_long.
+
+2012-05-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/tc-i386.c (tc_gen_reloc): Check x32 addend overflow
+	for BFD_RELOC_64.
+
+2012-05-08  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.am (check_DEJAGNU): Export LC_ALL=C in place of other
+	LC and LANG environment vars.
+	* Makefile.in: Regenerate.
+
+2012-05-07  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.am (check-DEJAGNU): Clear LC_COLLATE, LC_ALL and LANG.
+	* Makefile.in: Regenerate.
+
+2012-05-06  Arnold Metselaar <arnold_m@operamail.com>
+
+	* config/tc-z80.h(md_register_arithmetic): Define as 0.
+	* config/tc-z80.c(md_begin): Store register names in symbol table,
+	preventing usage as ordinary symbol.
+	* config/tc-z80.c(contains_register): New function.
+	* config/tc-z80.c(parse_exp2): Removed.
+	* config/tc-z80.c(parse_exp_not_indexed): New function.
+	* config/tc-z80.c(parse_exp): Add code to recogize indexed
+	addressing after parsing.
+	* config/tc-z80.c(emit_byte, emit_word): Use contains_register.
+	* config/tc-z80.c(emit_jp): Use parse_exp_not_indexed, simplify
+	condition for jump to register.
+	* config/tc-z80.c(emit_call, emit_jr, emit_ex, emit_rst): Use
+	parse_exp_not_indexed.
+
+2012-05-05  Alan Modra  <amodra@gmail.com>
+
+	* ecoff.c: Replace all uses of bfd_abs_section, bfd_com_section,
+	bfd_und_section and bfd_ind_section with their _ptr variants, or
+	use corresponding bfd_is_* macros.
+	* symbols.c: Likewise.
+	* config/obj-aout.c: Likewise.
+	* config/obj-coff-seh.h: Likewise.
+	* config/tc-hppa.c: Likewise.
+	* config/tc-hppa.h: Likewise.
+	* config/tc-ia64.c: Likewise.
+	* config/tc-m32r.c: Likewise.
+	* config/tc-microblaze.c: Likewise.
+	* config/tc-mips.c: Likewise.
+	* config/tc-score.c: Likewise.
+	* config/tc-score7.c: Likewise.
+	* config/tc-tic6x.c: Likewise.
+
+2012-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.tgt: Support x86_64-*-linux-gnux32.
+
+2012-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/tc-i386.c (match_template): Add `instruction' to
+	unsupported error message.
+
+2012-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/tc-i386.c (output_insn): Reformat.
+
+2012-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/tc-i386.c (output_insn): Remove the extra VEX check.
+
+2012-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/tc-i386.c (match_template): Improve unsupported error
+	message.
+
+2012-05-03  Sean Keys  <skeys@ipdatasys.com>
+
+	* configure, Makefile.in: Regenerate.
+	* Makefile.am (CPU_TYPES, TARGET_CPU_CFILES, TARGET_CPU_HFILES):
+	* configure.tgt: Added cpu type.
+	Added files for XGATE assembler.
+	* config/tc-xgate.c: Assembler for XGATE.
+	* config/tc-xgate.h: Header definition for assembler
+	Added files for XGATE testsuite.
+	* doc/Makefile.am (CPU_DOCS): Added XGATE file.
+	* doc/c-xgate.texi: Document XGATE and XGATE port.
+	* doc/as.texinfo: Ditto.
+	* doc/all.texi: Ditto
+	* NEWS: Mention the new support.
+
+2012-04-30  DJ Delorie  <dj@redhat.com>
+
+	* config/rx-parse.y (rx_intop): Add parameter for operation size.
+	Check for large positive constants really being small negative
+	ones.
+	(BRA, BSR): Update calls to rx_intop.
+	(immediate): Likewise.
+
+2012-04-26  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2dbg.c (DWARF2_ARANGES_VERSION): New define to 2.
+	(DWARF2_LINE_VERSION): Likewise.
+	(out_debug_line): Use DWARF2_LINE_VERSION not DWARF2_VERSION.
+	(out_debug_aranges): Use DWARF2_ARANGES_VERSION not DWARF2_VERSION.
+	(out_debug_abbrev): Use DW_FORM_data for DW_AT_high_pc when
+	DWARF2_VERSION >= 4.
+	(out_debug_info): Use difference between start and end as data
+	value for DW_AT_high_pc when DWARF2_VERSION >= 4.
+	* config/tc-ia64.h (DWARF2_LINE_VERSION): Override it.
+
+2012-04-27  David S. Miller  <davem@davemloft.net>
+
+	* doc/c-sparc.text: Document %l34 and %h34.
+
+	* config/tc-sparc.c (v9a_asr_table): Add 'cfr'.
+
+	* config/tc-sparc.c (sparc_arch_table): Add HWCAP_PAUSE to sparc4,
+	v8pluse, v8plusv, v9e, and v9v.
+	(v9a_asr_table): Add 'pause'.
+
+	* config/tc-sparc.c (sparc_arch_table): Add HWCAP_CBCOND to
+	sparc4, v8pluse, v8plusv, v9e, and v9v.
+	(sparc_ip): Handle R_SPARC_5 of immediate constants inline in
+	order to accomodate cbcond which otherwise would require two
+	relocations to be handled in a single instruction..
+
+	* config/tc-sparc.c (sparc_ip): Likewise.  Accept instruction
+	names containing "_".
+	(sparc_arch_table): Add sparc4, v8pluse, and v9e.  Add crypto
+	hwcap masks to v8plusv and v9v.
+
+	* config/tc-sparc.c (sparc_arch_table): Rework to use HWCAP_*
+	masks.
+	(sparc_md_end): No longer need to translate hwcap_seen values into
+	ELF hwcap bits, they now match exactly.
+	(get_hwcap_name): Use HWCAP_* and handle new values.
+	(sparc_ip): Fetch hwcaps from insn->hwcaps instead of insn->flags.
+
+2012-04-20  Tristan Gingold  <gingold@adacore.com>
+
+	* config/tc-ia64.c (obj_elf_vms_common): New function.
+	(md_pseudo_table): Add .vms_common pseudo.
+	* config/obj-elf.h (obj_elf_section_name): Add a prototype.
+	* config/obj-elf.c (obj_elf_section_name): Make it public.
+
+2012-04-17  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* config/tc-avr.c (md_apply_fix): Fix handling of BFD_RELOC32.
+
+2012-04-12  David S. Miller  <davem@davemloft.net>
+
+	* config/tc-sparc.c (sparc_ip): Handle '=', "%h34", "%l34", and
+	BFD_RELOC_SPARC_H34.
+	(md_apply_fix): Handle BFD_RELOC_SPARC_WDISP10 and BFD_RELOC_SPARC_H34.
+	(tc_gen_reloc): Likewise.
+
+2012-04-12  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.tgt (arm-*-nacl*): Match it.
+	* config/te-nacl.h (FPU_DEFAULT, EABI_DEFAULT): Define.
+	(LOCAL_LABELS_DOLLAR): Define.
+	* config/tc-arm.c (elf32_arm_target_format) [TE_NACL]:
+	Use nacl format variants.
+
+2012-04-12  Jie Zhang  <jie@codesourcery.com>
+            Meador Inge  <meadori@codesourcery.com>
+
+	* config/tc-arm.c (only_one_reg_in_list): New function.
+	(encode_ldmstm): Ditto.
+	(do_ldmstm): Use a different encoding when pushing or poping
+	a single register.
+	(A_COND_MASK): New macro.
+	(A_PUSH_POP_OP_MASK): Ditto.
+	(A1_OPCODE_PUSH): Ditto.
+	(A2_OPCODE_PUSH): Ditto.
+	(A2_OPCODE_POP): Ditto.
+
+2012-04-06  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* doc/c-mips.texi (MIPS Opts): Correct -no-mfix-24k to
+	-mno-fix-24k.
+
+2012-04-06  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.in (AC_CHECK_HEADERS): Add locale.h.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2012-04-05  Nick Clifton  <nickc@redhat.com>
+
+	* configure.in (AC_CHECK_FUNCS): Add setlocale.
+	(AM_LC_MESSAGES): Add.
+	* aclocal.m4: Regenerate.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2012-04-03  DJ Delorie  <dj@redhat.com>
+
+	* config/rx-parse.y: Make the .L optional for ADC and SBB.
+
+2012-04-02  DJ Delorie  <dj@redhat.com>
+
+	* config/rx-parse.y: IMM->IMM_, take an extra parameter for the
+	transfer size.
+	(IMM): New, call IMM_ with the default 32.
+	(IMMW,IMMB): Likewise, for 16 and 8.
+	(NIMM, MBIMM): Add size parameter.
+	(immediate): Likewise.  Allow 32768..65535 for 16-bit transfers.
+	(MOV.W): Use IMMW instead of IMM.
+
+	* config/rx-parse.y (ADC,SBB): ADC and SBB only allow .L.
+	(op_dp20_rm_l): New.
+	(op_dp20_rim_l): New.
+
+	* config/rx-parse.y (op_dp20_rms): Rename to op_dp20_rr, don't allow mem.
+	(ABS, NEG, NOT): These only take REG or REG,REG (rr, not rms).
+
+2012-03-29  Terry Guo  <terry.guo@arm.com>
+
+	* config/tc-arm.c (arm_cpus): Add cortex-m0plus.
+	* doc/c-arm.texi (ARM Options): Document -mcpu=cortex-m0plus.
+
+2012-03-23  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/tc-mips.c (mips_cpu_info_table): Add entry for Broadcom XLP.
+	* doc/c-mips.texi: Mention XLP.
+
+2012-03-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	[SH] Support the .uaquad and .8byte directives also for non-sh64
+	configurations.
+
+	* config/tc-sh.c (sh_cons_fix_new, md_apply_fix) [!HAVE_SH64]: Handle
+	BFD_RELOC_64.
+	* doc/c-sh64.texi (SH64 Machine Directives): Move .uaquad
+	description...
+	* doc/c-sh.texi (SH Machine Directives): ... here.
+
+2012-03-20  Nick Clifton  <nickc@redhat.com>
+
+	* config/tc-arm.c (do_vmrs): Accept priviledged mode VFP system
+	registers.
+	(do_vmsr): Likewise.
+	(arm_opcode_insns): Do not default to using the FPSCR register in
+	the VMRS and VMSR registers.
+
 2012-03-16  Roland McGrath  <mcgrathr@google.com>
 
 	* config/tc-i386.h [TE_NACL] (ELF_TARGET_FORMAT32, ELF_TARGET_FORMAT64):

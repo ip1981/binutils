@@ -25,6 +25,7 @@
 #include "bfdlink.h"
 #include "libbfd.h"
 #include "elf-bfd.h"
+#include "elf-nacl.h"
 #include "elf-vxworks.h"
 #include "bfd_stdint.h"
 #include "objalloc.h"
@@ -3189,9 +3190,9 @@ elf_i386_relocate_section (bfd *output_bfd,
 				   unresolved_reloc, warned);
 	}
 
-      if (sec != NULL && elf_discarded_section (sec))
+      if (sec != NULL && discarded_section (sec))
 	RELOC_AGAINST_DISCARDED_SECTION (info, input_bfd, input_section,
-					 rel, relend, howto, contents);
+					 rel, 1, relend, howto, 0, contents);
 
       if (info->relocatable)
 	continue;
@@ -3503,6 +3504,7 @@ elf_i386_relocate_section (bfd *output_bfd,
 		  return FALSE;
 		}
 	      else if (!info->executable
+		       && !SYMBOLIC_BIND (info, h)
 		       && h->type == STT_FUNC
 		       && ELF_ST_VISIBILITY (h->other) == STV_PROTECTED)
 		{
@@ -4864,7 +4866,7 @@ elf_i386_finish_dynamic_sections (bfd *output_bfd,
 			     + PLT_FDE_START_OFFSET);
 	}
       if (htab->plt_eh_frame->sec_info_type
-	  == ELF_INFO_TYPE_EH_FRAME)
+	  == SEC_INFO_TYPE_EH_FRAME)
 	{
 	  if (! _bfd_elf_write_section_eh_frame (output_bfd, info,
 						 htab->plt_eh_frame,
@@ -5206,7 +5208,16 @@ static const struct elf_i386_backend_data elf_i386_nacl_arch_bed =
 #undef	elf_backend_arch_data
 #define elf_backend_arch_data	&elf_i386_nacl_arch_bed
 
+#undef	elf_backend_modify_segment_map
+#define	elf_backend_modify_segment_map		nacl_modify_segment_map
+#undef	elf_backend_modify_program_headers
+#define	elf_backend_modify_program_headers	nacl_modify_program_headers
+
 #include "elf32-target.h"
+
+/* Restore defaults.  */
+#undef	elf_backend_modify_segment_map
+#undef	elf_backend_modify_program_headers
 
 /* VxWorks support.  */
 

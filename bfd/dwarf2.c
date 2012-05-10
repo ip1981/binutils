@@ -1401,6 +1401,7 @@ decode_line_info (struct comp_unit *unit, struct dwarf2_debug *stash)
   unsigned int i, bytes_read, offset_size;
   char *cur_file, *cur_dir;
   unsigned char op_code, extended_op, adj_opcode;
+  unsigned int exop_len;
   bfd_size_type amt;
 
   if (! read_section (abfd, &stash->debug_sections[debug_line],
@@ -1604,8 +1605,8 @@ decode_line_info (struct comp_unit *unit, struct dwarf2_debug *stash)
 	  else switch (op_code)
 	    {
 	    case DW_LNS_extended_op:
-	      /* Ignore length.  */
-	      line_ptr += 1;
+              exop_len = read_unsigned_leb128 (abfd, line_ptr, &bytes_read);
+	      line_ptr += bytes_read;
 	      extended_op = read_1_byte (abfd, line_ptr);
 	      line_ptr += 1;
 
@@ -1658,6 +1659,9 @@ decode_line_info (struct comp_unit *unit, struct dwarf2_debug *stash)
 		  (void) read_unsigned_leb128 (abfd, line_ptr, &bytes_read);
 		  line_ptr += bytes_read;
 		  break;
+                case DW_LNE_HP_source_file_correlation:
+                  line_ptr += exop_len - 1;
+                  break;
 		default:
 		  (*_bfd_error_handler) (_("Dwarf Error: mangled line number section."));
 		  bfd_set_error (bfd_error_bad_value);
@@ -2092,6 +2096,7 @@ scan_unit_for_symbols (struct comp_unit *unit)
       struct varinfo *var;
       bfd_vma low_pc = 0;
       bfd_vma high_pc = 0;
+      bfd_boolean high_pc_relative = FALSE;
 
       abbrev_number = read_unsigned_leb128 (abfd, info_ptr, &bytes_read);
       info_ptr += bytes_read;
@@ -2197,6 +2202,7 @@ scan_unit_for_symbols (struct comp_unit *unit)
 
 		case DW_AT_high_pc:
 		  high_pc = attr.u.val;
+		  high_pc_relative = attr.form != DW_FORM_addr;
 		  break;
 
 		case DW_AT_ranges:
@@ -2275,6 +2281,9 @@ scan_unit_for_symbols (struct comp_unit *unit)
 	    }
 	}
 
+      if (high_pc_relative)
+	high_pc += low_pc;
+
       if (func && high_pc != 0)
 	{
 	  if (!arange_add (unit->abfd, &func->arange, low_pc, high_pc))
@@ -2338,6 +2347,7 @@ parse_comp_unit (struct dwarf2_debug *stash,
   bfd_vma low_pc = 0;
   bfd_vma high_pc = 0;
   bfd *abfd = stash->bfd_ptr;
+  bfd_boolean high_pc_relative = FALSE;
 
   version = read_2_bytes (abfd, info_ptr);
   info_ptr += 2;
@@ -2440,6 +2450,7 @@ parse_comp_unit (struct dwarf2_debug *stash,
 
 	case DW_AT_high_pc:
 	  high_pc = attr.u.val;
+	  high_pc_relative = attr.form != DW_FORM_addr;
 	  break;
 
 	case DW_AT_ranges:
@@ -2467,6 +2478,8 @@ parse_comp_unit (struct dwarf2_debug *stash,
 	  break;
 	}
     }
+  if (high_pc_relative)
+    high_pc += low_pc;
   if (high_pc != 0)
     {
       if (!arange_add (unit->abfd, &unit->arange, low_pc, high_pc))

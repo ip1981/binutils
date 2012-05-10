@@ -622,6 +622,14 @@ struct asm_opcode
 #define T2_OPCODE_MASK	0xfe1fffff
 #define T2_DATA_OP_SHIFT 21
 
+#define A_COND_MASK         0xf0000000
+#define A_PUSH_POP_OP_MASK  0x0fff0000
+
+/* Opcodes for pushing/poping registers to/from the stack.  */
+#define A1_OPCODE_PUSH    0x092d0000
+#define A2_OPCODE_PUSH    0x052d0004
+#define A2_OPCODE_POP     0x049d0004
+
 /* Codes to distinguish the arithmetic instructions.  */
 #define OPCODE_AND	0
 #define OPCODE_EOR	1
@@ -7795,11 +7803,21 @@ do_it (void)
     }
 }
 
+/* If there is only one register in the register list,
+   then return its register number.  Otherwise return -1.  */
+static int
+only_one_reg_in_list (int range)
+{
+  int i = ffs (range) - 1;
+  return (i > 15 || range != (1 << i)) ? -1 : i;
+}
+
 static void
-do_ldmstm (void)
+encode_ldmstm(int from_push_pop_mnem)
 {
   int base_reg = inst.operands[0].reg;
   int range = inst.operands[1].imm;
+  int one_reg;
 
   inst.instruction |= base_reg << 16;
   inst.instruction |= range;
@@ -7832,6 +7850,23 @@ do_ldmstm (void)
 	    as_warn (_("if writeback register is in list, it must be the lowest reg in the list"));
 	}
     }
+
+  /* If PUSH/POP has only one register, then use the A2 encoding.  */
+  one_reg = only_one_reg_in_list (range);
+  if (from_push_pop_mnem && one_reg >= 0)
+    {
+      int is_push = (inst.instruction & A_PUSH_POP_OP_MASK) == A1_OPCODE_PUSH;
+
+      inst.instruction &= A_COND_MASK;
+      inst.instruction |= is_push ? A2_OPCODE_PUSH : A2_OPCODE_POP;
+      inst.instruction |= one_reg << 12;
+    }
+}
+
+static void
+do_ldmstm (void)
+{
+  encode_ldmstm (/*from_push_pop_mnem=*/FALSE);
 }
 
 /* ARMv5TE load-consecutive (argument parse)
@@ -8102,8 +8137,18 @@ do_vmrs (void)
       return;
     }
 
-  if (inst.operands[1].reg != 1)
-    first_error (_("operand 1 must be FPSCR"));
+  switch (inst.operands[1].reg)
+    {
+    case 0: /* FPSID */
+    case 1: /* FPSCR */
+    case 6: /* MVFR1 */
+    case 7: /* MVFR0 */
+    case 8: /* FPEXC */
+      inst.instruction |= (inst.operands[1].reg << 16);
+      break;
+    default:
+      first_error (_("operand 1 must be a VFP extension System Register"));
+    }
 
   inst.instruction |= (Rt << 12);
 }
@@ -8121,8 +8166,16 @@ do_vmsr (void)
       return;
     }
 
-  if (inst.operands[0].reg != 1)
-    first_error (_("operand 0 must be FPSCR"));
+  switch (inst.operands[0].reg)
+    {
+    case 0: /* FPSID  */
+    case 1: /* FPSCR  */
+    case 8: /* FPEXC */
+      inst.instruction |= (inst.operands[0].reg << 16);
+      break;
+    default:
+      first_error (_("operand 0 must be FPSID or FPSCR pr FPEXC"));
+    }
 
   inst.instruction |= (Rt << 12);
 }
@@ -8315,7 +8368,7 @@ do_push_pop (void)
   inst.operands[0].isreg = 1;
   inst.operands[0].writeback = 1;
   inst.operands[0].reg = REG_SP;
-  do_ldmstm ();
+  encode_ldmstm (/*from_push_pop_mnem=*/TRUE);
 }
 
 /* ARM V6 RFE (Return from Exception) loads the PC and CPSR from the
@@ -18147,8 +18200,8 @@ static const struct asm_opcode insns[] =
  cCE("fmrs",	e100a10, 2, (RR, RVS),	      vfp_reg_from_sp),
  cCE("fmsr",	e000a10, 2, (RVS, RR),	      vfp_sp_from_reg),
  cCE("fmstat",	ef1fa10, 0, (),		      noargs),
- cCE("vmrs",	ef10a10, 2, (APSR_RR, RVC),   vmrs),
- cCE("vmsr",	ee10a10, 2, (RVC, RR),        vmsr),
+ cCE("vmrs",	ef00a10, 2, (APSR_RR, RVC),   vmrs),
+ cCE("vmsr",	ee00a10, 2, (RVC, RR),        vmsr),
  cCE("fsitos",	eb80ac0, 2, (RVS, RVS),	      vfp_sp_monadic),
  cCE("fuitos",	eb80a40, 2, (RVS, RVS),	      vfp_sp_monadic),
  cCE("ftosis",	ebd0a40, 2, (RVS, RVS),	      vfp_sp_monadic),
@@ -22231,6 +22284,10 @@ elf32_arm_target_format (void)
   return (target_big_endian
 	  ? "elf32-bigarm-vxworks"
 	  : "elf32-littlearm-vxworks");
+#elif defined (TE_NACL)
+  return (target_big_endian
+	  ? "elf32-bigarm-nacl"
+	  : "elf32-littlearm-nacl");
 #else
   if (target_big_endian)
     return "elf32-bigarm";
@@ -23042,6 +23099,7 @@ static const struct arm_cpu_option_table arm_cpus[] =
   ARM_CPU_OPT ("cortex-m3",	ARM_ARCH_V7M,	 FPU_NONE,	  "Cortex-M3"),
   ARM_CPU_OPT ("cortex-m1",	ARM_ARCH_V6SM,	 FPU_NONE,	  "Cortex-M1"),
   ARM_CPU_OPT ("cortex-m0",	ARM_ARCH_V6SM,	 FPU_NONE,	  "Cortex-M0"),
+  ARM_CPU_OPT ("cortex-m0plus",	ARM_ARCH_V6SM,	 FPU_NONE,	  "Cortex-M0+"),
   /* ??? XSCALE is really an architecture.  */
   ARM_CPU_OPT ("xscale",	ARM_ARCH_XSCALE, FPU_ARCH_VFP_V2, NULL),
   /* ??? iwmmxt is not a processor.  */

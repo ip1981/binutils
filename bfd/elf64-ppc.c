@@ -5533,28 +5533,46 @@ opd_entry_value (asection *opd_sec,
      at a final linked executable with addr2line or somesuch.  */
   if (opd_sec->reloc_count == 0)
     {
-      char buf[8];
-
+      /* PR 13897: Cache the loaded section to speed up the search.  */
+      static asection * buf_sec = NULL;
+      static char       buf[8];
+      static bfd_vma    buf_val = 0;
+      static asection * buf_likely = NULL;
+      
+      if (buf_sec == opd_sec)
+	{
+	  if (code_sec != NULL)
+	    * code_sec = buf_likely;
+	  if (code_off != NULL && buf_likely != NULL)
+	    * code_off = buf_val - buf_likely->vma;
+	  return buf_val;
+	}
+   
       if (!bfd_get_section_contents (opd_bfd, opd_sec, buf, offset, 8))
 	return (bfd_vma) -1;
+      buf_sec = opd_sec;
 
-      val = bfd_get_64 (opd_bfd, buf);
+      buf_val = bfd_get_64 (opd_bfd, buf);
       if (code_sec != NULL)
 	{
-	  asection *sec, *likely = NULL;
+	  asection *sec;
+
+	  buf_likely = NULL;
 	  for (sec = opd_bfd->sections; sec != NULL; sec = sec->next)
-	    if (sec->vma <= val
+	    if (sec->vma <= buf_val
 		&& (sec->flags & SEC_LOAD) != 0
 		&& (sec->flags & SEC_ALLOC) != 0)
-	      likely = sec;
-	  if (likely != NULL)
+	      buf_likely = sec;
+	  if (buf_likely != NULL)
 	    {
-	      *code_sec = likely;
+	      *code_sec = buf_likely;
 	      if (code_off != NULL)
-		*code_off = val - likely->vma;
+		*code_off = buf_val - buf_likely->vma;
 	    }
 	}
-      return val;
+      else
+	buf_likely = NULL;
+      return buf_val;
     }
 
   BFD_ASSERT (is_ppc64_elf (opd_bfd));
@@ -5585,15 +5603,18 @@ opd_entry_value (asection *opd_sec,
 	      unsigned long symndx = ELF64_R_SYM (look->r_info);
 	      asection *sec;
 
-	      if (symndx < symtab_hdr->sh_info)
+	      if (symndx < symtab_hdr->sh_info
+		  || elf_sym_hashes (opd_bfd) == NULL)
 		{
 		  Elf_Internal_Sym *sym;
 
 		  sym = (Elf_Internal_Sym *) symtab_hdr->contents;
 		  if (sym == NULL)
 		    {
-		      sym = bfd_elf_get_elf_syms (opd_bfd, symtab_hdr,
-						  symtab_hdr->sh_info,
+		      size_t symcnt = symtab_hdr->sh_info;
+		      if (elf_sym_hashes (opd_bfd) == NULL)
+			symcnt = symtab_hdr->sh_size / symtab_hdr->sh_entsize;
+		      sym = bfd_elf_get_elf_syms (opd_bfd, symtab_hdr, symcnt,
 						  0, NULL, NULL, NULL);
 		      if (sym == NULL)
 			break;
@@ -6877,7 +6898,7 @@ adjust_opd_syms (struct elf_link_hash_entry *h, void *inf ATTRIBUTE_UNUSED)
 	  if (dsec == NULL)
 	    {
 	      for (dsec = sym_sec->owner->sections; dsec; dsec = dsec->next)
-		if (elf_discarded_section (dsec))
+		if (discarded_section (dsec))
 		  {
 		    ppc64_elf_tdata (sym_sec->owner)->deleted_section = dsec;
 		    break;
@@ -7058,7 +7079,7 @@ ppc64_elf_edit_opd (struct bfd_link_info *info, bfd_boolean non_overlapping)
       if (sec == NULL || sec->size == 0)
 	continue;
 
-      if (sec->sec_info_type == ELF_INFO_TYPE_JUST_SYMS)
+      if (sec->sec_info_type == SEC_INFO_TYPE_JUST_SYMS)
 	continue;
 
       if (sec->output_section == bfd_abs_section_ptr)
@@ -8102,8 +8123,8 @@ ppc64_elf_edit_toc (struct bfd_link_info *info)
       toc = bfd_get_section_by_name (ibfd, ".toc");
       if (toc == NULL
 	  || toc->size == 0
-	  || toc->sec_info_type == ELF_INFO_TYPE_JUST_SYMS
-	  || elf_discarded_section (toc))
+	  || toc->sec_info_type == SEC_INFO_TYPE_JUST_SYMS
+	  || discarded_section (toc))
 	continue;
 
       toc_relocs = NULL;
@@ -8116,7 +8137,7 @@ ppc64_elf_edit_toc (struct bfd_link_info *info)
       for (sec = ibfd->sections; sec != NULL; sec = sec->next)
 	{
 	  if (sec->reloc_count == 0
-	      || !elf_discarded_section (sec)
+	      || !discarded_section (sec)
 	      || get_opd_info (sec)
 	      || (sec->flags & SEC_ALLOC) == 0
 	      || (sec->flags & SEC_DEBUGGING) != 0)
@@ -8226,7 +8247,7 @@ ppc64_elf_edit_toc (struct bfd_link_info *info)
 		goto error_ret;
 
 	      if (sym_sec == NULL
-		  || elf_discarded_section (sym_sec))
+		  || discarded_section (sym_sec))
 		continue;
 
 	      if (!SYMBOL_CALLS_LOCAL (info, h))
@@ -8306,7 +8327,7 @@ ppc64_elf_edit_toc (struct bfd_link_info *info)
 	  int repeat;
 
 	  if (sec->reloc_count == 0
-	      || elf_discarded_section (sec)
+	      || discarded_section (sec)
 	      || get_opd_info (sec)
 	      || (sec->flags & SEC_ALLOC) == 0
 	      || (sec->flags & SEC_DEBUGGING) != 0)
@@ -8528,7 +8549,7 @@ ppc64_elf_edit_toc (struct bfd_link_info *info)
 	  for (sec = ibfd->sections; sec != NULL; sec = sec->next)
 	    {
 	      if (sec->reloc_count == 0
-		  || elf_discarded_section (sec))
+		  || discarded_section (sec))
 		continue;
 
 	      relstart = _bfd_elf_link_read_relocs (ibfd, sec, NULL, NULL,
@@ -12252,10 +12273,10 @@ ppc64_elf_relocate_section (bfd *output_bfd,
 	}
       h = (struct ppc_link_hash_entry *) h_elf;
 
-      if (sec != NULL && elf_discarded_section (sec))
+      if (sec != NULL && discarded_section (sec))
 	RELOC_AGAINST_DISCARDED_SECTION (info, input_bfd, input_section,
-					 rel, relend,
-					 ppc64_elf_howto_table[r_type],
+					 rel, 1, relend,
+					 ppc64_elf_howto_table[r_type], 0,
 					 contents);
 
       if (info->relocatable)
@@ -14089,7 +14110,7 @@ ppc64_elf_finish_dynamic_sections (bfd *output_bfd,
 
 
   if (htab->glink_eh_frame != NULL
-      && htab->glink_eh_frame->sec_info_type == ELF_INFO_TYPE_EH_FRAME
+      && htab->glink_eh_frame->sec_info_type == SEC_INFO_TYPE_EH_FRAME
       && !_bfd_elf_write_section_eh_frame (output_bfd, info,
 					   htab->glink_eh_frame,
 					   htab->glink_eh_frame->contents))

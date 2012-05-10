@@ -1,7 +1,9 @@
 #source: eh1.s
 #source: eh2a.s
-#ld:
+#as: --64
+#ld: -melf_x86_64 -Ttext 0x400078
 #readelf: -wf
+#notarget: x86_64-*-linux-gnux32
 #target: x86_64-*-*
 
 Contents of the .eh_frame section:

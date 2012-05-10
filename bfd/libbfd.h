@@ -122,6 +122,7 @@ extern void *bfd_zmalloc2
 
 extern void _bfd_default_error_handler (const char *s, ...);
 extern bfd_error_handler_type _bfd_error_handler;
+extern bfd_assert_handler_type _bfd_assert_handler;
 
 /* These routines allocate and free things on the BFD's objalloc.  */
 
@@ -1014,6 +1015,10 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_SPARC_M44",
   "BFD_RELOC_SPARC_L44",
   "BFD_RELOC_SPARC_REGISTER",
+  "BFD_RELOC_SPARC_H34",
+  "BFD_RELOC_SPARC_SIZE32",
+  "BFD_RELOC_SPARC_SIZE64",
+  "BFD_RELOC_SPARC_WDISP10",
   "BFD_RELOC_SPARC_REV32",
   "BFD_RELOC_SPARC_TLS_GD_HI22",
   "BFD_RELOC_SPARC_TLS_GD_LO10",
@@ -2088,6 +2093,18 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_M68HC11_PAGE",
   "BFD_RELOC_M68HC11_24",
   "BFD_RELOC_M68HC12_5B",
+  "BFD_RELOC_XGATE_RL_JUMP",
+  "BFD_RELOC_XGATE_RL_GROUP",
+  "BFD_RELOC_XGATE_LO16",
+  "BFD_RELOC_XGATE_GPAGE",
+  "BFD_RELOC_XGATE_24",
+  "BFD_RELOC_XGATE_PCREL_9",
+  "BFD_RELOC_XGATE_PCREL_10",
+  "BFD_RELOC_XGATE_IMM8_LO",
+  "BFD_RELOC_XGATE_IMM8_HI",
+  "BFD_RELOC_XGATE_IMM3",
+  "BFD_RELOC_XGATE_IMM4",
+  "BFD_RELOC_XGATE_IMM5",
   "BFD_RELOC_16C_NUM08",
   "BFD_RELOC_16C_NUM08_C",
   "BFD_RELOC_16C_NUM16",

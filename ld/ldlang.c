@@ -3886,8 +3886,9 @@ strip_excluded_output_sections (void)
 	  asection *s;
 
 	  for (s = output_section->map_head.s; s != NULL; s = s->map_head.s)
-	    if ((s->flags & SEC_LINKER_CREATED) != 0
-		&& (s->flags & SEC_EXCLUDE) == 0)
+	    if ((s->flags & SEC_EXCLUDE) == 0
+		&& ((s->flags & SEC_LINKER_CREATED) != 0
+		    || link_info.emitrelocations))
 	      {
 		exclude = FALSE;
 		break;
@@ -4618,7 +4619,7 @@ size_input_section
   lang_input_section_type *is = &((*this_ptr)->input_section);
   asection *i = is->section;
 
-  if (!((lang_input_statement_type *) i->owner->usrdata)->flags.just_syms
+  if (i->sec_info_type != SEC_INFO_TYPE_JUST_SYMS
       && (i->flags & SEC_EXCLUDE) == 0)
     {
       bfd_size_type alignment_needed;

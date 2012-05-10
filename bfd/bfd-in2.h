@@ -8,8 +8,8 @@
 /* Main header file for the bfd library -- portable access to object files.
 
    Copyright 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012 Free Software Foundation, Inc.
 
    Contributed by Cygnus Support.
 
@@ -304,11 +304,11 @@ typedef struct bfd_section *sec_ptr;
     ? (sec)->rawsize : (sec)->size) / bfd_octets_per_byte (bfd))
 
 /* Return TRUE if input section SEC has been discarded.  */
-#define elf_discarded_section(sec)				\
+#define discarded_section(sec)				\
   (!bfd_is_abs_section (sec)					\
    && bfd_is_abs_section ((sec)->output_section)		\
-   && (sec)->sec_info_type != ELF_INFO_TYPE_MERGE		\
-   && (sec)->sec_info_type != ELF_INFO_TYPE_JUST_SYMS)
+   && (sec)->sec_info_type != SEC_INFO_TYPE_MERGE		\
+   && (sec)->sec_info_type != SEC_INFO_TYPE_JUST_SYMS)
 
 typedef enum bfd_print_symbol
 {
@@ -701,16 +701,11 @@ extern bfd *bfd_elf_bfd_from_remote_memory
   (bfd *templ, bfd_vma ehdr_vma, bfd_vma *loadbasep,
    int (*target_read_memory) (bfd_vma vma, bfd_byte *myaddr, int len));
 
-/* Return the arch_size field of an elf bfd, or -1 if not elf.  */
-extern int bfd_get_arch_size
-  (bfd *);
-
-/* Return TRUE if address "naturally" sign extends, or -1 if not elf.  */
-extern int bfd_get_sign_extend_vma
-  (bfd *);
-
 extern struct bfd_section *_bfd_elf_tls_setup
   (bfd *, struct bfd_link_info *);
+
+extern struct bfd_section *
+_bfd_nearby_section (bfd *, struct bfd_section *, bfd_vma);
 
 extern void _bfd_fix_excluded_sec_syms
   (bfd *, struct bfd_link_info *);
@@ -1383,11 +1378,11 @@ typedef struct bfd_section
 
   /* Type of sec_info information.  */
   unsigned int sec_info_type:3;
-#define ELF_INFO_TYPE_NONE      0
-#define ELF_INFO_TYPE_STABS     1
-#define ELF_INFO_TYPE_MERGE     2
-#define ELF_INFO_TYPE_EH_FRAME  3
-#define ELF_INFO_TYPE_JUST_SYMS 4
+#define SEC_INFO_TYPE_NONE      0
+#define SEC_INFO_TYPE_STABS     1
+#define SEC_INFO_TYPE_MERGE     2
+#define SEC_INFO_TYPE_EH_FRAME  3
+#define SEC_INFO_TYPE_JUST_SYMS 4
 
   /* Nonzero if this section uses RELA relocations, rather than REL.  */
   unsigned int use_rela_p:1;
@@ -1547,28 +1542,25 @@ struct relax_table {
 
 /* These sections are global, and are managed by BFD.  The application
    and target back end are not permitted to change the values in
-   these sections.  New code should use the section_ptr macros rather
-   than referring directly to the const sections.  The const sections
-   may eventually vanish.  */
+   these sections.  */
+extern asection std_section[4];
+
 #define BFD_ABS_SECTION_NAME "*ABS*"
 #define BFD_UND_SECTION_NAME "*UND*"
 #define BFD_COM_SECTION_NAME "*COM*"
 #define BFD_IND_SECTION_NAME "*IND*"
 
-/* The absolute section.  */
-extern asection bfd_abs_section;
-#define bfd_abs_section_ptr ((asection *) &bfd_abs_section)
-#define bfd_is_abs_section(sec) ((sec) == bfd_abs_section_ptr)
-/* Pointer to the undefined section.  */
-extern asection bfd_und_section;
-#define bfd_und_section_ptr ((asection *) &bfd_und_section)
-#define bfd_is_und_section(sec) ((sec) == bfd_und_section_ptr)
 /* Pointer to the common section.  */
-extern asection bfd_com_section;
-#define bfd_com_section_ptr ((asection *) &bfd_com_section)
+#define bfd_com_section_ptr (&std_section[0])
+/* Pointer to the undefined section.  */
+#define bfd_und_section_ptr (&std_section[1])
+/* Pointer to the absolute section.  */
+#define bfd_abs_section_ptr (&std_section[2])
 /* Pointer to the indirect section.  */
-extern asection bfd_ind_section;
-#define bfd_ind_section_ptr ((asection *) &bfd_ind_section)
+#define bfd_ind_section_ptr (&std_section[3])
+
+#define bfd_is_und_section(sec) ((sec) == bfd_und_section_ptr)
+#define bfd_is_abs_section(sec) ((sec) == bfd_abs_section_ptr)
 #define bfd_is_ind_section(sec) ((sec) == bfd_ind_section_ptr)
 
 #define bfd_is_const_section(SEC)              \
@@ -1683,8 +1675,8 @@ extern asection bfd_ind_section;
   /* vma, lma, size, rawsize, compressed_size, relax, relax_count, */  \
      0,   0,   0,    0,       0,               0,     0,               \
                                                                        \
-  /* output_offset, output_section,              alignment_power,  */  \
-     0,             (struct bfd_section *) &SEC, 0,                    \
+  /* output_offset, output_section, alignment_power,               */  \
+     0,             &SEC,           0,                                 \
                                                                        \
   /* relocation, orelocation, reloc_count, filepos, rel_filepos,   */  \
      NULL,       NULL,        0,           0,       0,                 \
@@ -2146,7 +2138,9 @@ enum bfd_architecture
   bfd_arch_xc16x,     /* Infineon's XC16X Series.               */
 #define bfd_mach_xc16x         1
 #define bfd_mach_xc16xl        2
-#define bfd_mach_xc16xs         3
+#define bfd_mach_xc16xs        3
+  bfd_arch_xgate,   /* Freescale XGATE */
+#define bfd_mach_xgate         1
   bfd_arch_xtensa,    /* Tensilica's Xtensa cores.  */
 #define bfd_mach_xtensa        1
   bfd_arch_z80,
@@ -2600,6 +2594,10 @@ relocation types already defined.  */
   BFD_RELOC_SPARC_M44,
   BFD_RELOC_SPARC_L44,
   BFD_RELOC_SPARC_REGISTER,
+  BFD_RELOC_SPARC_H34,
+  BFD_RELOC_SPARC_SIZE32,
+  BFD_RELOC_SPARC_SIZE64,
+  BFD_RELOC_SPARC_WDISP10,
 
 /* SPARC little endian relocation  */
   BFD_RELOC_SPARC_REV32,
@@ -4473,6 +4471,57 @@ to follow the 16K memory bank of 68HC12 (seen as mapped in the window).  */
 This is the 5 bits of a value.  */
   BFD_RELOC_M68HC12_5B,
 
+/* Freescale XGATE reloc.
+This reloc marks the beginning of a bra/jal instruction.  */
+  BFD_RELOC_XGATE_RL_JUMP,
+
+/* Freescale XGATE reloc.
+This reloc marks a group of several instructions that gcc generates
+and for which the linker relaxation pass can modify and/or remove
+some of them.  */
+  BFD_RELOC_XGATE_RL_GROUP,
+
+/* Freescale XGATE reloc.
+This is the 16-bit lower part of an address.  It is used for the '16-bit'
+instructions.  */
+  BFD_RELOC_XGATE_LO16,
+
+/* Freescale XGATE reloc.  */
+  BFD_RELOC_XGATE_GPAGE,
+
+/* Freescale XGATE reloc.  */
+  BFD_RELOC_XGATE_24,
+
+/* Freescale XGATE reloc.
+This is a 9-bit pc-relative reloc.  */
+  BFD_RELOC_XGATE_PCREL_9,
+
+/* Freescale XGATE reloc.
+This is a 10-bit pc-relative reloc.  */
+  BFD_RELOC_XGATE_PCREL_10,
+
+/* Freescale XGATE reloc.
+This is the 16-bit lower part of an address.  It is used for the '16-bit'
+instructions.  */
+  BFD_RELOC_XGATE_IMM8_LO,
+
+/* Freescale XGATE reloc.
+This is the 16-bit higher part of an address.  It is used for the '16-bit'
+instructions.  */
+  BFD_RELOC_XGATE_IMM8_HI,
+
+/* Freescale XGATE reloc.
+This is a 3-bit pc-relative reloc.  */
+  BFD_RELOC_XGATE_IMM3,
+
+/* Freescale XGATE reloc.
+This is a 4-bit pc-relative reloc.  */
+  BFD_RELOC_XGATE_IMM4,
+
+/* Freescale XGATE reloc.
+This is a 5-bit pc-relative reloc.  */
+  BFD_RELOC_XGATE_IMM5,
+
 /* NS CR16C Relocations.  */
   BFD_RELOC_16C_NUM08,
   BFD_RELOC_16C_NUM08_C,
@@ -5637,6 +5686,15 @@ bfd_error_handler_type bfd_set_error_handler (bfd_error_handler_type);
 void bfd_set_error_program_name (const char *);
 
 bfd_error_handler_type bfd_get_error_handler (void);
+
+typedef void (*bfd_assert_handler_type) (const char *bfd_formatmsg,
+                                         const char *bfd_version,
+                                         const char *bfd_file,
+                                         int bfd_line);
+
+bfd_assert_handler_type bfd_set_assert_handler (bfd_assert_handler_type);
+
+bfd_assert_handler_type bfd_get_assert_handler (void);
 
 long bfd_get_reloc_upper_bound (bfd *abfd, asection *sect);
 

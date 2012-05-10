@@ -1,3 +1,134 @@
+2012-05-08  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.am (check_DEJAGNU): Export LC_ALL=C in place of other
+	LC and LANG environment vars.
+	* Makefile.in: Regenerate.
+
+2012-05-07  Tristan Gingold  <gingold@adacore.com>
+
+	* pe-dll.c (udef_table): Make it static.
+
+2012-05-05  Alan Modra  <amodra@gmail.com>
+
+	* pe-dll.c (process_def_file_and_drectve): Use bfd_und_section_ptr.
+	(generate_reloc): Use bfd_abs_section_ptr.
+
+2012-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.tgt: Support x86_64-*-linux-gnux32.
+
+2012-05-03  Sean Keys  <skeys@ipdatasys.com>
+
+	* Makefile.am (ALL_EMULATIONS): Added new emulation for XGATE
+	and XGATE (elf).
+	* Makefile.in: Rebuild.
+	* configure.tgt: Recognize XGATE.
+	* scripttempl/elfxgate.sc: New file, mostly cloned from m68hc12.
+	* emulparams/xgateelf: New emulation, mostly cloned from m68hc12.
+	* NEWS: Mention new support.
+
+2012-04-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	Make bfd asserts cause linker errors.
+	* ldmain.c (default_bfd_assert_handler): New variable.
+	(ld_bfd_assert_handler): New function.
+	(main): Call bfd_set_assert_handler.
+
+2012-04-24  Alan Modra  <amodra@gmail.com>
+
+	* ld/ldlang.c (size_input_section): Use sec_info_type rather than
+	usrdata->flags.just_syms.
+	* ld/ldwrite.c (build_link_order): Likewise.
+	* ld/emultempl/hppaelf.em (build_section_lists): Likewise.
+	* ld/emultempl/ppc64elf.em (build_toc_list): Likewise.
+	* ld/emultempl/armelf.em (build_section_lists): Likewise.
+	(after_allocation): Update for renamed sec_info_type value.
+	* ld/emultempl/tic6xdsbt.em: Likewise.
+
+2012-04-12  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.tgt (arm*-*-nacl*, arm*b-*-nacl*): Handle them.
+	* emulparams/armelf_nacl.sh: New file.
+	* emulparams/armelfb_nacl.sh: New file.
+	* Makefile.am (ALL_EMULATION_SOURCES): Add earmelf_nacl.c
+	and earmelfb_nacl.c here.
+	(earmelf_nacl.c, earmelfb_nacl.c): New targets.
+	* Makefile.in: Regenerated.
+
+2012-04-11  Tristan Gingold  <gingold@adacore.com>
+
+	* scripttempl/ia64vms.sc: New file.
+	* emultempl/vms.em (_before_parse): Support for ia64.
+	(elf64-ia64-vms): New fragment for ia64.
+	* emulparams/elf64_ia64_vms.sh: New file.
+	* configure.tgt (ia64-*-*vms*): Add.
+	* Makefile.am (ALL_64_EMULATION_SOURCES): Add eelf64_ia64_vms.c
+	(eelf64_ia64_vms.c): New rule.
+	* Makefile.in: Regenerate.
+
+2012-04-06  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.in (AC_CHECK_HEADERS): Add locale.h.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2012-04-05  Nick Clifton  <nickc@redhat.com>
+
+	* configure.in (AC_CHECK_FUNCS): Add setlocale.
+	(AM_LC_MESSAGES): Add.
+	* aclocal.m4: Regenerate.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2012-04-03  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.tgt (i[3-7]86-*-nacl*, x86_64-*-nacl*): Handle them.
+	* emulparams/elf_nacl.sh: New file.
+	* emulparams/elf_i386_nacl.sh: New file.
+	* emulparams/elf32_x86_64_nacl.sh: New file.
+	* emulparams/elf_x86_64_nacl.sh: New file.
+	* Makefile.am (ALL_EMULATION_SOURCES): Add eelf_i386_nacl.c here.
+	(ALL_64_EMULATION_SOURCES): Add eelf32_x86_64_nacl.c and
+	eelf_x86_64_nacl.c here.
+	(eelf_i386_nacl.c, eelf32_x86_64_nacl.c, eelf_x86_64_nacl.c):
+	New targets.
+	* Makefile.in: Regenerated.
+
+	* scripttempl/elf.sc: Handle SEPARATE_CODE cases.
+
+2012-04-02  Mike Frysinger  <vapier@gentoo.org>
+
+	* ldmisc.c (vfinfo): Assign new local str to fmt.  Delete
+	putc call.  If str and fmt are different, call fwrite on
+	the difference.
+
+2012-03-30  Nick Clifton  <nickc@redhat.com>
+
+	* po/vi.po: Updated Vietnamese translation.
+
+2012-03-27  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.in: Set want64 on a 64-bit host regardless of
+	--enable-targets=all.
+	* configure: Regenerated.
+
+2012-03-26  Tristan Gingold  <gingold@adacore.com>
+
+	* lexsup.c (parse_args): Add a missing '\n'.
+
+2012-03-25  Alan Modra  <amodra@gmail.com>
+
+	* ldemul.c (before_allocation_default): Revert last change.
+	ldlang.c (lang_add_section): Likewise.
+	(strip_excluded_output_sections): Don't strip output sections with
+	user input sections when emitrelocations, unless all are SEC_EXCLUDE.
+
+2012-03-23  Alan Modra  <amodra@gmail.com>
+
+	* ldemul.c (before_allocation_default): When emitrelocations,
+	don't strip sections..
+	* ldlang.c (lang_add_section): ..and don't set up map_head, map_tail.
+
 2012-03-14  Kai Tietz  <ktietz@redhat.com>
 	    Pascal Obry  <pascal@obry.net>
 

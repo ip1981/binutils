@@ -26,6 +26,7 @@
 #include "bfdlink.h"
 #include "libbfd.h"
 #include "elf-bfd.h"
+#include "elf-nacl.h"
 #include "bfd_stdint.h"
 #include "objalloc.h"
 #include "hashtab.h"
@@ -3142,9 +3143,9 @@ elf_x86_64_relocate_section (bfd *output_bfd,
 				   unresolved_reloc, warned);
 	}
 
-      if (sec != NULL && elf_discarded_section (sec))
+      if (sec != NULL && discarded_section (sec))
 	RELOC_AGAINST_DISCARDED_SECTION (info, input_bfd, input_section,
-					 rel, relend, howto, contents);
+					 rel, 1, relend, howto, 0, contents);
 
       if (info->relocatable)
 	continue;
@@ -3464,8 +3465,9 @@ elf_x86_64_relocate_section (bfd *output_bfd,
 	  /* Check to make sure it isn't a protected function symbol
 	     for shared library since it may not be local when used
 	     as function address.  */
-	  if (info->shared
+	  if (!info->executable
 	      && h
+	      && !SYMBOLIC_BIND (info, h)
 	      && h->def_regular
 	      && h->type == STT_FUNC
 	      && ELF_ST_VISIBILITY (h->other) == STV_PROTECTED)
@@ -3679,6 +3681,27 @@ elf_x86_64_relocate_section (bfd *output_bfd,
 		      outrel.r_info = htab->r_info (0,
 						    R_X86_64_RELATIVE64);
 		      outrel.r_addend = relocation + rel->r_addend;
+		      /* Check addend overflow.  */
+		      if ((outrel.r_addend & 0x80000000)
+			  != (rel->r_addend & 0x80000000))
+			{
+			  const char *name;
+			  if (h && h->root.root.string)
+			    name = h->root.root.string;
+			  else
+			    name = bfd_elf_sym_name (input_bfd, symtab_hdr,
+						     sym, NULL);
+			  (*_bfd_error_handler)
+			    (_("%B: addend %ld in relocation %s against "
+			       "symbol `%s' at 0x%lx in section `%A' is "
+			       "out of range"),
+			     input_bfd, input_section,
+			     (long) rel->r_addend,
+			     x86_64_elf_howto_table[r_type].name,
+			     name, (unsigned long) rel->r_offset);
+			  bfd_set_error (bfd_error_bad_value);
+			  return FALSE;
+			}
 		    }
 		  else
 		    {
@@ -4501,6 +4524,7 @@ elf_x86_64_reloc_type_class (const Elf_Internal_Rela *rela)
   switch ((int) ELF32_R_TYPE (rela->r_info))
     {
     case R_X86_64_RELATIVE:
+    case R_X86_64_RELATIVE64:
       return reloc_class_relative;
     case R_X86_64_JUMP_SLOT:
       return reloc_class_plt;
@@ -4713,8 +4737,7 @@ elf_x86_64_finish_dynamic_sections (bfd *output_bfd,
 			     htab->plt_eh_frame->contents
 			     + PLT_FDE_START_OFFSET);
 	}
-      if (htab->plt_eh_frame->sec_info_type
-	  == ELF_INFO_TYPE_EH_FRAME)
+      if (htab->plt_eh_frame->sec_info_type == SEC_INFO_TYPE_EH_FRAME)
 	{
 	  if (! _bfd_elf_write_section_eh_frame (output_bfd, info,
 						 htab->plt_eh_frame,
@@ -5132,13 +5155,16 @@ static const bfd_byte elf_x86_64_nacl_plt0_entry[NACL_PLT_ENTRY_SIZE] =
     0x4d, 0x01, 0xfb,             	/* add %r15, %r11		*/
     0x41, 0xff, 0xe3,             	/* jmpq *%r11			*/
 
-    /* 41 bytes of nop to pad out to the standard size.  */
+    /* 9-byte nop sequence to pad out to the next 32-byte boundary.  */
+    0x2e, 0x0f, 0x1f, 0x84, 0, 0, 0, 0, 0, /* nopl %cs:0x0(%rax,%rax,1)	*/
+
+    /* 32 bytes of nop to pad out to the standard size.  */
     0x66, 0x66, 0x66, 0x66, 0x66, 0x66,    /* excess data32 prefixes	*/
     0x2e, 0x0f, 0x1f, 0x84, 0, 0, 0, 0, 0, /* nopw %cs:0x0(%rax,%rax,1)	*/
     0x66, 0x66, 0x66, 0x66, 0x66, 0x66,    /* excess data32 prefixes	*/
     0x2e, 0x0f, 0x1f, 0x84, 0, 0, 0, 0, 0, /* nopw %cs:0x0(%rax,%rax,1)	*/
-    0x66, 0x66,                            /* excess data32 prefixes	*/
-    0x2e, 0x0f, 0x1f, 0x84, 0, 0, 0, 0, 0, /* nopw %cs:0x0(%rax,%rax,1)	*/
+    0x66,                                  /* excess data32 prefix	*/
+    0x90                                   /* nop */
   };
 
 static const bfd_byte elf_x86_64_nacl_plt_entry[NACL_PLT_ENTRY_SIZE] =
@@ -5226,6 +5252,11 @@ static const struct elf_x86_64_backend_data elf_x86_64_nacl_arch_bed =
 #undef	elf_backend_arch_data
 #define	elf_backend_arch_data	&elf_x86_64_nacl_arch_bed
 
+#undef	elf_backend_modify_segment_map
+#define	elf_backend_modify_segment_map		nacl_modify_segment_map
+#undef	elf_backend_modify_program_headers
+#define	elf_backend_modify_program_headers	nacl_modify_program_headers
+
 #include "elf64-target.h"
 
 /* Native Client x32 support.  */
@@ -5263,10 +5294,12 @@ static const struct elf_x86_64_backend_data elf_x86_64_nacl_arch_bed =
 #include "elf32-target.h"
 
 /* Restore defaults.  */
-#undef elf_backend_object_p
+#undef	elf_backend_object_p
 #define elf_backend_object_p		    elf64_x86_64_elf_object_p
-#undef elf_backend_bfd_from_remote_memory
-#undef elf_backend_size_info
+#undef	elf_backend_bfd_from_remote_memory
+#undef	elf_backend_size_info
+#undef	elf_backend_modify_segment_map
+#undef	elf_backend_modify_program_headers
 
 /* Intel L1OM support.  */
 

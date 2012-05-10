@@ -161,6 +161,8 @@ static struct bfd_link_callbacks link_callbacks =
   ldlang_override_segment_assignment
 };
 
+static bfd_assert_handler_type default_bfd_assert_handler;
+
 struct bfd_link_info link_info;
 
 static void
@@ -198,6 +200,17 @@ maybe_altexec(char **argv)
   exit(errno);
 }
 
+/* If there's a BFD assertion, we'll notice and exit with an error
+   unless otherwise instructed.  */
+
+static void
+ld_bfd_assert_handler (const char *fmt, const char *bfdver,
+		       const char *file, int line)
+{
+  (*default_bfd_assert_handler) (fmt, bfdver, file, line);
+  config.make_executable = FALSE;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -225,6 +238,11 @@ main (int argc, char **argv)
   bfd_init ();
 
   bfd_set_error_program_name (program_name);
+
+  /* We want to notice and fail on those nasty BFD assertions which are
+     likely to signal incorrect output being generated but otherwise may
+     leave no trace.  */
+  default_bfd_assert_handler = bfd_set_assert_handler (ld_bfd_assert_handler);
 
   xatexit (ld_cleanup);
 

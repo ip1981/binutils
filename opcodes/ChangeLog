@@ -1,3 +1,53 @@
+2012-05-03  Sean Keys  <skeys@ipdatasys.com>
+
+	* Makefile.in, configure: regenerate
+	* disassemble.c (disassembler): Recognize ARCH_XGATE.
+	* xgate-dis.c (read_memory, print_insn, print_insn_xgate):
+	New functions.
+	* configure.in: Recognize xgate.
+	* xgate-dis.c, xgate-opc.c: New files for support of xgate
+	* Makefile.am (CFILES, ALL_MACHINES): New files for disassembly
+	and opcode generation for xgate.
+
+2012-04-30  DJ Delorie  <dj@redhat.com>
+
+	* rx-decode.opc (MOV): Do not sign-extend immediates which are
+	already the maximum bit size.
+	* rx-decode.c: Regenerate.
+
+2012-04-27  David S. Miller  <davem@davemloft.net>
+
+	* sparc-dis.c (v9a_asr_reg_names): Add 'cfr'.
+	* sparc-opc.c (sparc_opcodes): Add rd/wr cases for %cfr.
+
+	* sparc-opc.c (sparc_opcodes): Add 'wr X, %pause' and 'pause'.
+	* sparc-dis.c (v9a_asr_reg_names): Add 'pause'.
+
+	* sparc-opc.c (CBCOND): New define.
+	(CBCOND_XCC): Likewise.
+	(cbcond): New helper macro.
+	(sparc_opcodes): Add compare-and-branch instructions.
+
+	* sparc-dis.c (print_insn_sparc): Handle ')'.
+	* sparc-opc.c (sparc_opcodes): Add crypto instructions.
+
+	* sparc-opc.c (sparc_opcodes): Rework table to put HWCAP values
+	into new struct sparc_opcode 'hwcaps' field instead of 'flags'.
+
+2012-04-12  David S. Miller  <davem@davemloft.net>
+
+	* sparc-dis.c (X_DISP10): Define.
+	(print_insn_sparc): Handle '='.
+
+2012-04-01  Mike Frysinger  <vapier@gentoo.org>
+
+	* bfin-dis.c (fmtconst): Replace decimal handling with a single
+	sprintf call and the '*' field width.
+
+2012-03-23  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* mips-dis.c (mips_arch_choices): Add entry for Broadcom XLP.
+
 2012-03-16  Alan Modra  <amodra@gmail.com>
 
 	* ppc-dis.c (PPC_OPC_SEGS, PPC_OP_TO_SEG): Delete.

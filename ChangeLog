@@ -1,3 +1,26 @@
+2012-05-09  Nick Clifton  <nickc@redhat.com>
+	    Paul Smith  <psmith@gnu.org>
+
+	PR bootstrap/50461
+	* configure.ac (mpfr-dir): When using in-tree MPFR sources
+	allow for the fact that from release v3.1.0 of MPFR the source
+	files were moved into a src sub-directory.
+	* configure: Regenerate.
+
+2012-05-02  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.ac (ENABLE_GOLD): Consider *-*-nacl* targets ELF.
+	* configure: Regenerate.
+
+2012-04-25  Joel Brobecker  <brobecker@adacore.com>
+
+	* config.sub: Update to 2012-04-18 version from official repo.
+
+2012-03-19  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac (ia64*-*-*vms*): Add support for ld.
+	* configure: Regenerate.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (enable_libgomp): Remove *-*-irix6*.
@@ -577,7 +600,7 @@
 
 	* config.guess: Update to version 2011-02-02
 	* config.sub: Update to version 2011-02-24
-	
+
 2011-03-03  Sebastian Pop  <sebastian.pop@amd.com>
 
         * configure.ac: Adjust test of with_ppl.
