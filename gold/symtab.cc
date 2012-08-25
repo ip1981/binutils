@@ -365,8 +365,9 @@ Symbol::should_add_dynsym_entry(Symbol_table* symtab) const
 
   // If the symbol was forced dynamic in a --dynamic-list file
   // or an --export-dynamic-symbol option, add it.
-  if (parameters->options().in_dynamic_list(this->name())
-      || parameters->options().is_export_dynamic_symbol(this->name()))
+  if (!this->is_from_dynobj()
+      && (parameters->options().in_dynamic_list(this->name())
+	  || parameters->options().is_export_dynamic_symbol(this->name())))
     {
       if (!this->is_forced_local())
         return true;
@@ -594,8 +595,10 @@ Symbol_table::gc_mark_undef_symbols(Layout* layout)
     {
       const char* name = p->c_str();
       Symbol* sym = this->lookup(name);
-      gold_assert(sym != NULL);
-      if (sym->source() == Symbol::FROM_OBJECT 
+      // It's not an error if a symbol named by --export-dynamic-symbol
+      // is undefined.
+      if (sym != NULL
+	  && sym->source() == Symbol::FROM_OBJECT 
           && !sym->object()->is_dynamic())
         {
           Relobj* obj = static_cast<Relobj*>(sym->object());
@@ -1681,6 +1684,7 @@ Symbol_table::define_special_symbol(const char** pname, const char** pversion,
 				    bool* resolve_oldsym)
 {
   *resolve_oldsym = false;
+  *poldsym = NULL;
 
   // If the caller didn't give us a version, see if we get one from
   // the version script.

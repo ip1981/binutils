@@ -530,11 +530,13 @@ queue_middle_tasks(const General_options& options,
 
   // Call Object::layout for the second time to determine the
   // output_sections for all referenced input sections.  When
-  // --gc-sections or --icf is turned on, Object::layout is
-  // called twice.  It is called the first time when the
-  // symbols are added.
+  // --gc-sections or --icf is turned on, or when certain input
+  // sections have to be mapped to unique segments, Object::layout
+  // is called twice.  It is called the first time when symbols
+  // are added.
   if (parameters->options().gc_sections()
-      || parameters->options().icf_enabled())
+      || parameters->options().icf_enabled()
+      || layout->is_unique_segment_for_sections_specified())
     {
       for (Input_objects::Relobj_iterator p = input_objects->relobj_begin();
 	   p != input_objects->relobj_end();
@@ -543,6 +545,14 @@ queue_middle_tasks(const General_options& options,
 	  Task_lock_obj<Object> tlo(task, *p);
 	  (*p)->layout(symtab, layout, NULL);
 	}
+    }
+
+  // Layout deferred objects due to plugins.
+  if (parameters->options().has_plugins())
+    {
+      Plugin_manager* plugins = parameters->options().plugins();
+      gold_assert(plugins != NULL);
+      plugins->layout_deferred_objects();
     }
 
   /* If plugins have specified a section order, re-arrange input sections
@@ -557,14 +567,6 @@ queue_middle_tasks(const General_options& options,
 	   p != layout->section_list().end();
 	   ++p)
 	(*p)->update_section_layout(layout->get_section_order_map());
-    }
-
-  // Layout deferred objects due to plugins.
-  if (parameters->options().has_plugins())
-    {
-      Plugin_manager* plugins = parameters->options().plugins();
-      gold_assert(plugins != NULL);
-      plugins->layout_deferred_objects();
     }
 
   if (parameters->options().gc_sections()

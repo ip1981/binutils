@@ -69,6 +69,7 @@ esac
 
 targ_cpu=`echo $targ | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\1/'`
 case "${targ_cpu}" in
+aarch64*)	 targ_archs="bfd_aarch64_arch bfd_arm_arch";;
 alpha*)		 targ_archs=bfd_alpha_arch ;;
 am34*|am33_2.0*) targ_archs=bfd_mn10300_arch ;;
 arm*)		 targ_archs=bfd_arm_arch ;;
@@ -85,8 +86,8 @@ hppa*)		 targ_archs=bfd_hppa_arch ;;
 i[3-7]86)	 targ_archs=bfd_i386_arch ;;
 i370)		 targ_archs=bfd_i370_arch ;;
 lm32)	         targ_archs=bfd_lm32_arch ;;
-m6811*|m68hc11*) targ_archs="bfd_m68hc11_arch bfd_m68hc12_arch" ;;
-m6812*|m68hc12*) targ_archs="bfd_m68hc12_arch bfd_m68hc11_arch" ;;
+m6811*|m68hc11*) targ_archs="bfd_m68hc11_arch bfd_m68hc12_arch bfd_m9s12x_arch bfd_m9s12xg_arch" ;;
+m6812*|m68hc12*) targ_archs="bfd_m68hc12_arch bfd_m68hc11_arch bfd_m9s12x_arch bfd_m9s12xg_arch" ;;
 m68*)		 targ_archs=bfd_m68k_arch ;;
 m88*)		 targ_archs=bfd_m88k_arch ;;
 microblaze*)	 targ_archs=bfd_microblaze_arch ;;
@@ -143,6 +144,26 @@ case "${targ}" in
 
 # START OF targmatch.h
 #ifdef BFD64
+  aarch64-*-elf)
+    targ_defvec=bfd_elf64_littleaarch64_vec
+    targ_selvecs="bfd_elf64_bigaarch64_vec bfd_elf32_littlearm_vec bfd_elf32_bigarm_vec"
+    want64=true
+    ;;
+  aarch64_be-*-elf)
+    targ_defvec=bfd_elf64_bigaarch64_vec
+    targ_selvecs="bfd_elf64_littleaarch64_vec bfd_elf32_bigarm_vec bfd_elf32_littlearm_vec"
+    want64=true
+    ;;
+  aarch64-*-linux*)
+    targ_defvec=bfd_elf64_littleaarch64_vec
+    targ_selvecs="bfd_elf64_bigaarch64_vec bfd_elf32_littlearm_vec bfd_elf32_bigarm_vec"
+    want64=true
+    ;;
+  aarch64_be-*-linux*)
+    targ_defvec=bfd_elf64_bigaarch64_vec
+    targ_selvecs="bfd_elf64_littleaarch64_vec bfd_elf32_bigarm_vec bfd_elf32_littlearm_vec"
+    want64=true
+    ;;
   alpha*-*-freebsd* | alpha*-*-kfreebsd*-gnu)
     targ_defvec=bfd_elf64_alpha_freebsd_vec
     targ_selvecs="bfd_elf64_alpha_vec ecoffalpha_little_vec"
@@ -1005,7 +1026,6 @@ case "${targ}" in
     targ_selvecs="bfd_elf32_ntradlittlemips_vec bfd_elf32_tradbigmips_vec bfd_elf32_tradlittlemips_vec bfd_elf64_tradbigmips_vec bfd_elf64_tradlittlemips_vec"
     want64=true
     ;;
-#endif
   mips*el-*-linux*)
     targ_defvec=bfd_elf32_tradlittlemips_vec
     targ_selvecs="bfd_elf32_tradbigmips_vec ecoff_little_vec ecoff_big_vec bfd_elf32_ntradlittlemips_vec bfd_elf64_tradlittlemips_vec bfd_elf32_ntradbigmips_vec bfd_elf64_tradbigmips_vec"
@@ -1016,7 +1036,6 @@ case "${targ}" in
     targ_selvecs="bfd_elf32_tradlittlemips_vec ecoff_big_vec ecoff_little_vec bfd_elf32_ntradbigmips_vec bfd_elf64_tradbigmips_vec bfd_elf32_ntradlittlemips_vec bfd_elf64_tradlittlemips_vec"
     want64=true
     ;;
-#ifdef BFD64
   mips64*el-*-freebsd* | mips64*el-*-kfreebsd*-gnu)
     # FreeBSD vectors
     targ_defvec=bfd_elf32_ntradlittlemips_freebsd_vec

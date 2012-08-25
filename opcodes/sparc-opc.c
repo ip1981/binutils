@@ -1,6 +1,6 @@
 /* Table of opcodes for the sparc.
    Copyright 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2002, 2004, 2005, 2006, 2007, 2008, 2011
+   2000, 2002, 2004, 2005, 2006, 2007, 2008, 2011, 2012
    Free Software Foundation, Inc.
 
    This file is part of the GNU opcodes library.
@@ -25,8 +25,8 @@
    instruction's name rather than the args.  This would make gas faster, pinsn
    slower, but would mess up some macros a bit.  xoxorich. */
 
-#include <stdio.h>
 #include "sysdep.h"
+#include <stdio.h>
 #include "opcode/sparc.h"
 
 /* Some defines to make life easy.  */
@@ -1960,19 +1960,19 @@ SLCBCC("cbnefr", 15),
 { "mpmul",      F3F(2, 0x36, 0x148), F3F(~2, ~0x36, ~0x148), "X", F_FLOAT, HWCAP_MPMUL, v9b },
 { "montmul",    F3F(2, 0x36, 0x149), F3F(~2, ~0x36, ~0x149), "X", F_FLOAT, HWCAP_MONT, v9b },
 { "montsqr",    F3F(2, 0x36, 0x14a), F3F(~2, ~0x36, ~0x14a), "X", F_FLOAT, HWCAP_MONT, v9b },
-{"aes_eround01",  F2(2, 0x19)|OPF_LOW4(0), F2(~2, ~0x19)|OPF_LOW4(~0), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
-{"aes_eround23",  F2(2, 0x19)|OPF_LOW4(1), F2(~2, ~0x19)|OPF_LOW4(~1), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
-{"aes_dround01",  F2(2, 0x19)|OPF_LOW4(2), F2(~2, ~0x19)|OPF_LOW4(~2), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
-{"aes_dround23",  F2(2, 0x19)|OPF_LOW4(3), F2(~2, ~0x19)|OPF_LOW4(~3), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
-{"aes_eround01_l",F2(2, 0x19)|OPF_LOW4(4), F2(~2, ~0x19)|OPF_LOW4(~4), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
-{"aes_eround23_l",F2(2, 0x19)|OPF_LOW4(5), F2(~2, ~0x19)|OPF_LOW4(~5), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
-{"aes_dround01_l",F2(2, 0x19)|OPF_LOW4(6), F2(~2, ~0x19)|OPF_LOW4(~6), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
-{"aes_dround23_l",F2(2, 0x19)|OPF_LOW4(7), F2(~2, ~0x19)|OPF_LOW4(~7), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
-{"aes_kexpand1",  F2(2, 0x19)|OPF_LOW4(8), F2(~2, ~0x19)|OPF_LOW4(~8), "v,B,),H", F_FLOAT, HWCAP_AES, v9b },
-{"des_round",     F2(2, 0x19)|OPF_LOW4(9), F2(~2, ~0x19)|OPF_LOW4(~9), "v,B,5,H", F_FLOAT, HWCAP_DES, v9b },
-{"kasumi_fl_xor", F2(2, 0x19)|OPF_LOW4(10), F2(~2, ~0x19)|OPF_LOW4(~10), "v,B,5,H", F_FLOAT, HWCAP_KASUMI, v9b },
-{"kasumi_fi_xor", F2(2, 0x19)|OPF_LOW4(11), F2(~2, ~0x19)|OPF_LOW4(~11), "v,B,5,H", F_FLOAT, HWCAP_KASUMI, v9b },
-{"camellia_f",    F2(2, 0x19)|OPF_LOW4(12), F2(~2, ~0x19)|OPF_LOW4(~12), "v,B,5,H", F_FLOAT, HWCAP_CAMELLIA, v9b },
+{"aes_eround01",  F3F4(2, 0x19, 0), F3F4(~2, ~0x19, ~0), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
+{"aes_eround23",  F3F4(2, 0x19, 1), F3F4(~2, ~0x19, ~1), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
+{"aes_dround01",  F3F4(2, 0x19, 2), F3F4(~2, ~0x19, ~2), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
+{"aes_dround23",  F3F4(2, 0x19, 3), F3F4(~2, ~0x19, ~3), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
+{"aes_eround01_l",F3F4(2, 0x19, 4), F3F4(~2, ~0x19, ~4), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
+{"aes_eround23_l",F3F4(2, 0x19, 5), F3F4(~2, ~0x19, ~5), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
+{"aes_dround01_l",F3F4(2, 0x19, 6), F3F4(~2, ~0x19, ~6), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
+{"aes_dround23_l",F3F4(2, 0x19, 7), F3F4(~2, ~0x19, ~7), "v,B,5,H", F_FLOAT, HWCAP_AES, v9b },
+{"aes_kexpand1",  F3F4(2, 0x19, 8), F3F4(~2, ~0x19, ~8), "v,B,),H", F_FLOAT, HWCAP_AES, v9b },
+{"des_round",     F3F4(2, 0x19, 9), F3F4(~2, ~0x19, ~9), "v,B,5,H", F_FLOAT, HWCAP_DES, v9b },
+{"kasumi_fl_xor", F3F4(2, 0x19, 10), F3F4(~2, ~0x19, ~10), "v,B,5,H", F_FLOAT, HWCAP_KASUMI, v9b },
+{"kasumi_fi_xor", F3F4(2, 0x19, 11), F3F4(~2, ~0x19, ~11), "v,B,5,H", F_FLOAT, HWCAP_KASUMI, v9b },
+{"camellia_f",    F3F4(2, 0x19, 12), F3F4(~2, ~0x19, ~12), "v,B,5,H", F_FLOAT, HWCAP_CAMELLIA, v9b },
 { "flcmps",	CMPFCC(0)|F3F(2, 0x36, 0x151), CMPFCC(~0)|F3F(~2, ~0x36, ~0x151), "6,e,f", F_FLOAT, HWCAP_HPC, v9b },
 { "flcmps",	CMPFCC(1)|F3F(2, 0x36, 0x151), CMPFCC(~1)|F3F(~2, ~0x36, ~0x151), "7,e,f", F_FLOAT, HWCAP_HPC, v9b },
 { "flcmps",	CMPFCC(2)|F3F(2, 0x36, 0x151), CMPFCC(~2)|F3F(~2, ~0x36, ~0x151), "8,e,f", F_FLOAT, HWCAP_HPC, v9b },

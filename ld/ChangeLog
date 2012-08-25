@@ -1,3 +1,365 @@
+2012-08-17  Kai Tietz  <ktietz@redhat.com>
+
+	PR ld/14326
+	* scripttempl/pe.sc: Add _etext symbol.
+
+2012-08-14  Nick Clifton  <nickc@redhat.com>
+
+	* configure.in (ALL_LINGUGAS): Add uk.
+	* configure: Regenerate.
+	* po/uk.po: New Ukranian translation.
+
+2012-08-13  Ian Bolton  <ian.bolton@arm.com>
+            Laurent Desnogues  <laurent.desnogues@arm.com>
+            Jim MacArthur  <jim.macarthur@arm.com>
+            Marcus Shawcroft  <marcus.shawcroft@arm.com>
+            Nigel Stephens  <nigel.stephens@arm.com>
+            Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+            Richard Earnshaw  <rearnsha@arm.com>
+            Sofiane Naci  <sofiane.naci@arm.com>
+            Tejas Belagod  <tejas.belagod@arm.com>
+            Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* Makefile.am: Add AArch64.
+	* Makefile.in: Regenerate.
+	* configure.tgt: Add AArch64.
+	* emulparams/aarch64elf.sh: New file.
+	* emulparams/aarch64elfb.sh: New file.
+	* emulparams/aarch64linux.sh: New file.
+	* emulparams/aarch64linuxb.sh: New file.
+	* emultempl/aarch64elf.em: New file.
+	* NEWS: Mention the new feature.
+
+2012-08-09  Nick Clifton  <nickc@redhat.com>
+
+	* po/vi.po: Updated Vietnamese translation.
+
+2012-08-07  Daniel Green  <venix1@gmail.com>
+
+	* scripttempl/pe.sc (R_TLS): Add .tls$AAA and .tls$ZZZ.
+	* scripttempl/pep.sc (R_TLS): Add .tls$AAA and .tls$ZZZ.
+
+2012-08-07  Nick Clifton  <nickc@redhat.com>
+
+	* po/ja.po: Updated Japanese translation.
+
+2012-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* emulparams/elf32bmip.sh: Make _gp hidden.
+	* emulparams/elf32bmipn32-defs.sh: Likewise.
+	* emulparams/elf32mipswindiss.sh: Likewise.
+	* scripttempl/mips.sc: Likewise.
+
+2012-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* ldexp.h (etree_union): Add defsym member to the assign member
+	structure.
+	(exp_assign): Add hidden argument to prototype.
+	* ldexp.c (exp_fold_tree_1): Use the defsym member to handle
+	--defsym symbols.
+	(exp_assop): Add defsym argument, initialize the defsym member
+	of the assign structure.
+	(exp_assign): Handle hidden symbols.
+	(exp_defsym): Update to use the defsym argument to exp_assop.
+	(exp_provide): Update to handle the defsym argument to exp_assop.
+	* ldlex.l (HIDDEN): New token.
+	* ldgram.y (HIDDEN): Likewise.
+	(assignment, section): Update calls to exp_assign.
+	* ldctor.c (ldctor_build_sets): Likewise.
+	* mri.c (mri_format): Likewise.
+	* ldlang.c (lang_insert_orphan, lang_leave_overlay): Likewise.
+	(open_input_bfds): Remove --defsym symbols special case.
+	* emultempl/beos.em (gld_${EMULATION_NAME}_set_symbols): Update
+	call to exp_assign.
+	* emultempl/pe.em (gld_${EMULATION_NAME}_set_symbols): Likewise.
+	* emultempl/pep.em (gld_${EMULATION_NAME}_set_symbols): Likewise.
+	* emultempl/spuelf.em (spu_place_special_section): Likewise.
+	* emultempl/xtensaelf.em (ld_xtensa_insert_page_offsets):
+	Likewise.
+	* ld.texinfo (Assigning Values to Symbols): Add HIDDEN.
+	(HIDDEN): New subsection.
+
+2012-07-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ld/14156
+	* ldlang.c (wild_sort): Properly handle by_none.
+
+	* scripttempl/elf.sc: Add SORT_NONE to .init and .fini sections.
+	* scripttempl/elf32msp430.sc: Likewise.
+	* scripttempl/elf32msp430_3.sc: Likewise.
+	* scripttempl/elfd10v.sc: Likewise.
+	* scripttempl/elfd30v.sc: Likewise.
+	* scripttempl/elfxtensa.sc: Likewise.
+
+2012-07-30  Nick Clifton  <nickc@redhat.com>
+
+	* po/ld.pot: Updated template.
+	* po/bg.po: Updated Bulgarian translation.
+	* po/es.po: Updated Spanish translation.
+	* po/fi.po: Updated Finnish translation.
+
+2012-07-27  Mike Frysinger  <vapier@gentoo.org>
+
+	* configure.in (BFD_VERSION): Run bfd/configure --version and
+	parse the output of that.
+	* configure: Regenerate.
+
+2012-07-27  Tristan Gingold  <gingold@adacore.com>
+
+	* NEWS: Add marker for 2.23.
+
+2012-07-24  Jan Waclawek <konfera@efton.sk>
+
+	PR ld/14058
+	* emultempl/avrelf.em (avr_elf_after_allocation): Call
+	elf32_avr_size_stubs with is_prealloc_run as TRUE.
+
+2012-07-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* emulparams/elf_s390.sh (IREL_IN_PLT): Define.
+	* emulparams/elf64_s390.sh (IREL_IN_PLT): Define.
+
+2012-07-13  Nick Clifton  <nickc@redhat.com>
+
+	PR ld/14357
+	* ldmain.c (trace_file_tries): Rename to 'verbose'.
+	* ldfile.c: Likewise.
+	* ldlang.c: Likewise.
+	* ldmain.h: Likewise.
+	* lexsup.c: Likewise.
+	* emultempl/elf32.em: Likewise.
+	* emultemp/spuelf.em: Likewise.
+	* pe-dll.c (pe_dll_generate_implib): Only print creation message
+	in verbose mode.
+
+2012-07-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ld/14156
+	* NEWS: Mention SORT_NONE.
+
+	* ld.h (sort_type): Add by_none.
+
+	* ld.texinfo: Document SORT_NONE.
+
+	* ldgram.y: Handle SORT_NONE.
+
+	* ldlang.c (update_wild_statements): Handle by_none.  Don't
+	sort .init/.fini sections.
+
+	* ldlex.l: Add SORT_NONE.
+
+2012-07-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ld.texinfo: Replace __end_SECNAME with __stop_SECNAME.
+
+2012-06-29  Nick Clifton  <nickc@redhat.com>
+
+	* scripttempl/alphavms.sc: Add .debug_macro section.
+	* scripttempl/elf.sc: Likewise.
+	* scripttempl/elf64hppa.sc: Likewise.
+	* scripttempl/elf_chaos.sc: Likewise.
+	* scripttempl/elfxtensa.sc: Likewise.
+	* scripttempl/ia64vms.sc: Likewise.
+
+	* scripttempl/armbpabi.sc: Add .debug_pubtypes, .debug_ranges and
+	.debug_macro sections.
+	* scripttempl/avr.sc: Likewise.
+	* scripttempl/elf32cr16.sc: Likewise.
+	* scripttempl/elf32crx.sc: Likewise.
+	* scripttempl/elf32msp430.sc: Likewise.
+	* scripttempl/elf32msp430_3.sc: Likewise.
+	* scripttempl/elf32sh-symbian.sc: Likewise.
+	* scripttempl/elfd30v.sc: Likewise.
+	* scripttempl/elfi370.sc: Likewise.
+	* scripttempl/elfm68hc11.sc: Likewise.
+	* scripttempl/elfm68hc12.sc: Likewise.
+	* scripttempl/elfxgate.sc: Likewise.
+	* scripttempl/i386beos.sc: Likewise.
+	* scripttempl/i386go32.sc: Likewise.
+	* scripttempl/ip2k.sc: Likewise.
+	* scripttempl/iq2000.sc: Likewise.
+	* scripttempl/mep.sc: Likewise.
+	* scripttempl/mmo.sc: Likewise.
+	* scripttempl/v850.sc: Likewise.
+	* scripttempl/xstormy16.sc: Likewise.
+
+2012-06-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ldlang.c (update_wild_statements): Remove redundant statement.
+
+2012-06-25  Alan Modra  <amodra@gmail.com>
+
+	* ldlang.c (load_symbols): Close file and set flags.loaded
+	after parsing script file.
+	(open_input_bfds): Don't segv on closed script.
+
+2012-06-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.tgt: Enable elf_k1om for x86_64-*-linux-gnux32.
+	Remove x32 in tdir_i386linux and tdir_elf_i386.
+
+2012-06-22  Roland McGrath  <mcgrathr@google.com>
+
+	* NEWS: Mention __ehdr_start.
+
+2012-06-21  Alan Modra  <amodra@gmail.com>
+
+	* ldlang.c (lang_insert_orphan): Don't make __start_<sec> symbol
+	absolute, and remove unnecessary alignment.
+
+2012-06-16  Alan Modra  <amodra@gmail.com>
+
+	* ldlang.h (lang_output_section_statement_type): Add after_end field.
+	(lang_abs_symbol_at_beginning_of, lang_abs_symbol_at_end_of): Delete.
+	(section_for_dot): Declare.
+	* ldlang.c (lang_size_sections_1): Correct comment.
+	(current_section): Move earlier.
+	(current_assign, prefer_next_section): New static vars.
+	(lang_do_assignments_1): Add found_end param.  Detect _end
+	assignment to set found_end.  Set os->after_end.  Set above statics.
+	(lang_do_assignments): Adjust lang_do_assignments_1 call.  Init
+	vars.
+	(section_for_dot): New function.
+	(lang_set_startof): Don't make an absolute symbol.
+	(lang_abs_symbol_at_beginning_of, lang_abs_symbol_at_end_of): Delete.
+	* ldexp.c (new_rel_from_abs): Use section_for_dot.
+	* emultempl/lnk960.em (symbol_at_beginning_of): New function.
+	(symbol_at_end_of): Likewise.
+	(lnk960_after_allocation): Use them.
+	* scripttempl/elf.sc: Precede OTHER_GOT_SYMBOLS with . = .; and
+	likewise before __bss_start.
+
+2012-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* plugin.c (set_tv_header): Handle link_info.pie.
+
+2012-06-11  Alan Modra  <amodra@gmail.com>
+
+	PR ld/14215
+	* ldexp.c (fold_name <SIZEOF, ALIGNOF>): Allow forward section
+	references.
+	* emulparams/elf32_x86_64.sh (SEPARATE_GOTPLT): Depend on size of
+	.got.plt.
+	* emulparams/elf32mb_linux.sh (SEPARATE_GOTPLT): Likewise.
+	* emulparams/elf32tilegx.sh (SEPARATE_GOTPLT): Likewise.
+	* emulparams/elf32tilepro.sh (SEPARATE_GOTPLT): Likewise.
+	* emulparams/elf64tilegx.sh (SEPARATE_GOTPLT): Likewise.
+	* emulparams/elf_i386.sh (SEPARATE_GOTPLT): Likewise.
+	* emulparams/elf_k1om.sh (SEPARATE_GOTPLT): Likewise.
+	* emulparams/elf_l1om.sh (SEPARATE_GOTPLT): Likewise.
+	* emulparams/elf_x86_64.sh (SEPARATE_GOTPLT): Likewise.
+
+2012-06-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR 13697
+	* scripttempl/avr.sc (.data): Keep it.
+
+2012-06-02  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* Makefile.am (TEXINFO_TEX): Remove $(top_srcdir) prefix.
+	* Makefile.in: Regenerate.
+
+2012-05-30  Alan Modra  <amodra@gmail.com>
+
+	* ldlang.h (lang_output_section_statement_type): Rename
+	"section_relative_symbol" field to "update_dot".
+	* ldlang.c: Update all uses.
+	(strip_excluded_output_sections): Don't test update_dot_tree here..
+	(lang_leave_overlay): ..set update_dot here.
+
+2012-05-26  Alan Modra  <amodra@gmail.com>
+
+	* ldlex.h (enum option_values): Move from..
+	* lexsup.c: ..here.
+	* emultempl/ppc32elf.em: Include ldlex.h.
+	(PARSE_AND_LIST_ARGS_CASES): Disable optimisations when
+	--traditional-format.
+	* emultempl/ppc64elf.em: Likewise.
+
+2012-05-25  Alan Modra  <amodra@gmail.com>
+
+	PR ld/13909
+	* emultempl/elf32.em (gld${EMULATION_NAME}_after_open): Handle
+	multiple .eh_frame sections attached to bfd.
+
+2012-05-23  Cary Coutant  <ccoutant@google.com>
+
+	* scripttempl/armbpabi.sc: Match .data.rel.ro.* sections more
+	carefully.  Fix typo where .rela.data.rel.ro matches
+	.rel.data.rel.ro.
+	* scripttempl/mep.sc: Likewise.
+	* scripttempl/elf.sc: Match .data.rel.ro.* sections more carefully.
+	* scripttempl/elf64hppa.sc: Likewise.
+	* scripttempl/elfxtensa.sc: Likewise.
+
+2012-05-17  Daniel Richard G.  <skunk@iskunk.org>
+	    Nick Clifton  <nickc@redhat.com>
+
+	PR 14072
+	* configure.in: Add check that sysdep.h has been included before
+	any system header files.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* sysdep.h: Generate an error if included before config.h.
+
+2012-05-16  Sergio Durigan Junior  <sergiodj@redhat.com>
+
+	* emultempl/m68hc1xelf.em (hook_in_stub): Pass proper `bfd'
+	as the first argument for `bfd_get_section_name'.
+
+2012-05-16  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	PR ld/14069
+	* emultempl/elf32.em: Include *-*-gnu* targets in ld.so.conf
+	support.
+
+2012-05-15  James Murray <jsm@jsm-net.demon.co.uk>
+
+	* NEWS: Mention the support for S12X processors.
+
+2012-05-14  James Lemke  <jwlemke@codesourcery.com>
+
+	* ldlang.c (walk_wild_consider_section): Don't copy section_flag_list.
+	Pass it to callback.
+	(walk_wild_section_general): Pass section_flag_list to callback.
+	(lang_add_section): Add sflag_list parm.
+	Move out logic to keep / omit a section & call bfd_lookup_section_flags.
+	(output_section_callback_fast): Add sflag_list parm.
+	Add new parm to lang_add_section calls.
+	(output_section_callback): Likewise.
+	(check_section_callback): Add sflag_list parm.
+	(lang_place_orphans): Add new parm to lang_add_section calls.
+	(gc_section_callback): Add sflag_list parm.
+	(find_relro_section_callback): Likewise.
+	* ldlang.h (callback_t): Add flag_info parm.
+	(lang_add_section): Add sflag_list parm.
+	* emultempl/armelf.em (elf32_arm_add_stub_section):
+	Add lang_add_section parm.
+	* emultempl/beos.em (gld*_place_orphan): Likewise.
+	* emultempl/elf32.em (gld*_place_orphan): Likewise.
+	* emultempl/hppaelf.em (hppaelf_add_stub_section): Likewise.
+	* emultempl/m68hc1xelf.em (m68hc11elf_add_stub_section): Likewise.
+	* emultempl/mipself.em (mips_add_stub_section): Likewise.
+	* emultempl/mmo.em (mmo_place_orphan): Likewise.
+	* emultempl/pe.em (gld_*_place_orphan): Likewise.
+	* emultempl/pep.em (gld_*_place_orphan): Likewise.
+	* emultempl/ppc64elf.em (ppc_add_stub_section): Likewise.
+	* emultempl/spuelf.em (spu_place_special_section): Likewise.
+	* emultempl/vms.em (vms_place_orphan): Likewise.
+
+2012-05-14  Catherine Moore  <clm@codesourcery.com>
+
+	* NEWS:  Mention PowerPC VLE port.
+
+2012-05-11  Daniel Richard G.  <skunk@iskunk.org>
+
+	PR binutils/14028
+	* configure.in: Invoke ACX_HEADER_STRING.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* sysdep.h: If STRINGS_WITH_STRING is defined then include both
+	string.h and strings.h.
+
 2012-05-08  Alan Modra  <amodra@gmail.com>
 
 	* Makefile.am (check_DEJAGNU): Export LC_ALL=C in place of other
@@ -36,14 +398,14 @@
 
 2012-04-24  Alan Modra  <amodra@gmail.com>
 
-	* ld/ldlang.c (size_input_section): Use sec_info_type rather than
+	* ldlang.c (size_input_section): Use sec_info_type rather than
 	usrdata->flags.just_syms.
-	* ld/ldwrite.c (build_link_order): Likewise.
-	* ld/emultempl/hppaelf.em (build_section_lists): Likewise.
-	* ld/emultempl/ppc64elf.em (build_toc_list): Likewise.
-	* ld/emultempl/armelf.em (build_section_lists): Likewise.
+	* ldwrite.c (build_link_order): Likewise.
+	* emultempl/hppaelf.em (build_section_lists): Likewise.
+	* emultempl/ppc64elf.em (build_toc_list): Likewise.
+	* emultempl/armelf.em (build_section_lists): Likewise.
 	(after_allocation): Update for renamed sec_info_type value.
-	* ld/emultempl/tic6xdsbt.em: Likewise.
+	* emultempl/tic6xdsbt.em: Likewise.
 
 2012-04-12  Roland McGrath  <mcgrathr@google.com>
 
@@ -119,7 +481,7 @@
 2012-03-25  Alan Modra  <amodra@gmail.com>
 
 	* ldemul.c (before_allocation_default): Revert last change.
-	ldlang.c (lang_add_section): Likewise.
+	* ldlang.c (lang_add_section): Likewise.
 	(strip_excluded_output_sections): Don't strip output sections with
 	user input sections when emitrelocations, unless all are SEC_EXCLUDE.
 

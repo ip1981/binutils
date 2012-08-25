@@ -447,7 +447,6 @@ obj_elf_weak (int ignore ATTRIBUTE_UNUSED)
       symbolP = get_sym_from_input_line_and_check ();
       c = *input_line_pointer;
       S_SET_WEAK (symbolP);
-      symbol_get_obj (symbolP)->local = 1;
       if (c == ',')
 	{
 	  input_line_pointer++;
@@ -1049,10 +1048,15 @@ obj_elf_section (int push)
 	      group_name = obj_elf_section_name ();
 	      if (group_name == NULL)
 		attr &= ~SHF_GROUP;
-	      else if (strncmp (input_line_pointer, ",comdat", 7) == 0)
+	      else if (*input_line_pointer == ',')
 		{
-		  input_line_pointer += 7;
-		  linkonce = 1;
+		  ++input_line_pointer;
+		  SKIP_WHITESPACE ();
+		  if (strncmp (input_line_pointer, "comdat", 6) == 0)
+		    {
+		      input_line_pointer += 6;
+		      linkonce = 1;
+		    }
 		}
 	      else if (strncmp (name, ".gnu.linkonce", 13) == 0)
 		linkonce = 1;

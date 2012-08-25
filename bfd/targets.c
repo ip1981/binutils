@@ -369,6 +369,7 @@ BFD_JUMP_TABLE macros.
 .  NAME##_bfd_is_target_special_symbol, \
 .  NAME##_get_lineno, \
 .  NAME##_find_nearest_line, \
+.  _bfd_generic_find_nearest_line_discriminator, \
 .  _bfd_generic_find_line, \
 .  NAME##_find_inliner_info, \
 .  NAME##_bfd_make_debug_symbol, \
@@ -392,6 +393,9 @@ BFD_JUMP_TABLE macros.
 .  bfd_boolean (*_bfd_find_nearest_line)
 .    (bfd *, struct bfd_section *, struct bfd_symbol **, bfd_vma,
 .     const char **, const char **, unsigned int *);
+.  bfd_boolean (*_bfd_find_nearest_line_discriminator)
+.    (bfd *, struct bfd_section *, struct bfd_symbol **, bfd_vma,
+.     const char **, const char **, unsigned int *, unsigned int *);
 .  bfd_boolean (*_bfd_find_line)
 .    (bfd *, struct bfd_symbol **, struct bfd_symbol *,
 .     const char **, unsigned int *);
@@ -497,8 +501,9 @@ BFD_JUMP_TABLE macros.
 .  bfd_boolean (*_bfd_gc_sections) (bfd *, struct bfd_link_info *);
 .
 .  {* Sets the bitmask of allowed and disallowed section flags.  *}
-.  void (*_bfd_lookup_section_flags) (struct bfd_link_info *,
-.				      struct flag_info *);
+.  bfd_boolean (*_bfd_lookup_section_flags) (struct bfd_link_info *,
+.					     struct flag_info *,
+.					     asection *);
 .
 .  {* Attempt to merge SEC_MERGE sections.  *}
 .  bfd_boolean (*_bfd_merge_sections) (bfd *, struct bfd_link_info *);
@@ -725,6 +730,7 @@ extern const bfd_target bfd_elf64_alpha_freebsd_vec;
 extern const bfd_target bfd_elf64_alpha_vec;
 extern const bfd_target bfd_elf64_big_generic_vec;
 extern const bfd_target bfd_elf64_bigmips_vec;
+extern const bfd_target bfd_elf64_bigaarch64_vec;
 extern const bfd_target bfd_elf64_hppa_linux_vec;
 extern const bfd_target bfd_elf64_hppa_vec;
 extern const bfd_target bfd_elf64_ia64_big_vec;
@@ -733,6 +739,7 @@ extern const bfd_target bfd_elf64_ia64_little_vec;
 extern const bfd_target bfd_elf64_ia64_vms_vec;
 extern const bfd_target bfd_elf64_little_generic_vec;
 extern const bfd_target bfd_elf64_littlemips_vec;
+extern const bfd_target bfd_elf64_littleaarch64_vec;
 extern const bfd_target bfd_elf64_mmix_vec;
 extern const bfd_target bfd_elf64_powerpc_vec;
 extern const bfd_target bfd_elf64_powerpcle_vec;
@@ -1100,6 +1107,7 @@ static const bfd_target * const _bfd_target_vector[] =
 	&bfd_elf64_alpha_vec,
 	&bfd_elf64_big_generic_vec,
 	&bfd_elf64_bigmips_vec,
+	&bfd_elf64_bigaarch64_vec,
 	&bfd_elf64_hppa_linux_vec,
 	&bfd_elf64_hppa_vec,
 	&bfd_elf64_ia64_big_vec,
@@ -1108,6 +1116,7 @@ static const bfd_target * const _bfd_target_vector[] =
 	&bfd_elf64_ia64_vms_vec,
 	&bfd_elf64_little_generic_vec,
 	&bfd_elf64_littlemips_vec,
+	&bfd_elf64_littleaarch64_vec,
 	&bfd_elf64_mmix_vec,
 	&bfd_elf64_powerpc_vec,
 	&bfd_elf64_powerpcle_vec,

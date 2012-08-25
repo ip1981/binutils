@@ -633,8 +633,9 @@ elf_object_p (bfd *abfd)
       if (i_ehdrp->e_shnum == SHN_UNDEF)
 	{
 	  i_ehdrp->e_shnum = i_shdr.sh_size;
-	  if (i_ehdrp->e_shnum != i_shdr.sh_size
-	      || i_ehdrp->e_shnum == 0)
+	  if (i_ehdrp->e_shnum >= SHN_LORESERVE
+	      || i_ehdrp->e_shnum != i_shdr.sh_size
+	      || i_ehdrp->e_shnum  == 0)
 	    goto got_wrong_format_error;
 	}
 
@@ -1615,7 +1616,7 @@ NAME(_bfd_elf,bfd_from_remote_memory)
   (bfd *templ,
    bfd_vma ehdr_vma,
    bfd_vma *loadbasep,
-   int (*target_read_memory) (bfd_vma, bfd_byte *, int))
+   int (*target_read_memory) (bfd_vma, bfd_byte *, bfd_size_type))
 {
   Elf_External_Ehdr x_ehdr;	/* Elf file header, external form */
   Elf_Internal_Ehdr i_ehdr;	/* Elf file header, internal form */

@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 AC_ISC_POSIX
 
 changequote(,)dnl
-BFD_VERSION=`sed -n -e 's/^.._INIT_AUTOMAKE.*,[ 	]*\([^ 	]*\)[ 	]*).*/\1/p' < ${srcdir}/../bfd/configure.in`
+BFD_VERSION=`${srcdir}/../bfd/configure --version | sed -n -e '1s,.* ,,p'`
 changequote([,])dnl
 AM_INIT_AUTOMAKE(binutils, ${BFD_VERSION})
 
@@ -43,6 +43,13 @@ AC_DEFINE_UNQUOTED(DEFAULT_AR_DETERMINISTIC, $default_ar_deterministic,
 AM_BINUTILS_WARNINGS
 
 AC_CONFIG_HEADERS(config.h:config.in)
+
+AH_VERBATIM([00_CONFIG_H_CHECK],
+[/* Check that config.h is #included before system headers
+   (this works only for glibc, but that should be enough).  */
+#if defined(__GLIBC__)
+#  error config.h must be #included before system headers
+#endif])
 
 if test -z "$target" ; then
     AC_MSG_ERROR(Unrecognized target system type; please check config.sub.)
@@ -91,6 +98,7 @@ AC_SUBST(DEMANGLER_NAME)
 
 AC_CHECK_HEADERS(string.h strings.h stdlib.h unistd.h fcntl.h sys/file.h limits.h locale.h sys/param.h)
 AC_HEADER_SYS_WAIT
+ACX_HEADER_STRING
 AC_FUNC_ALLOCA
 AC_CHECK_FUNCS(sbrk utimes setmode getc_unlocked strcoll setlocale)
 AC_CHECK_FUNC([mkstemp],

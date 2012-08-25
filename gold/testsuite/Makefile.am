@@ -164,6 +164,16 @@ gc_orphan_section_test:gc_orphan_section_test.o gcctestdir/ld
 gc_orphan_section_test.stdout: gc_orphan_section_test
 	$(TEST_NM) gc_orphan_section_test > gc_orphan_section_test.stdout
 
+check_SCRIPTS += pr14265.sh
+check_DATA += pr14265.stdout
+MOSTLYCLEANFILES += pr14265
+pr14265.o: pr14265.c
+	$(COMPILE) -O0 -c -o $@ $<
+pr14265: pr14265.o 
+	$(LINK) -Bgcctestdir/ -Wl,--gc-sections -T $(srcdir)/pr14265.t -o $@ $<
+pr14265.stdout: pr14265
+	$(TEST_NM) --format=bsd --numeric-sort $< > $@
+
 check_SCRIPTS += icf_test.sh
 check_DATA += icf_test.stdout
 MOSTLYCLEANFILES += icf_test
@@ -1519,13 +1529,15 @@ unused.c:
 	@cp /dev/null $@
 
 check_SCRIPTS += plugin_final_layout.sh
-check_DATA += plugin_final_layout.stdout
+check_DATA += plugin_final_layout.stdout plugin_final_layout_readelf.stdout
 plugin_final_layout.o: plugin_final_layout.cc
 	$(CXXCOMPILE) -O0 -c -ffunction-sections  -fdata-sections -g -o $@ $<
 plugin_final_layout: plugin_final_layout.o plugin_section_order.so gcctestdir/ld
 	$(CXXLINK) -Bgcctestdir/ -Wl,--plugin,"./plugin_section_order.so" plugin_final_layout.o
 plugin_final_layout.stdout: plugin_final_layout
 	$(TEST_NM) -n plugin_final_layout > plugin_final_layout.stdout
+plugin_final_layout_readelf.stdout: plugin_final_layout
+	$(TEST_READELF) -Wl plugin_final_layout > plugin_final_layout_readelf.stdout
 
 plugin_section_order.so: plugin_section_order.o
 	$(LINK) -Bgcctestdir/ -shared plugin_section_order.o
@@ -1967,12 +1979,14 @@ memory_test: memory_test.o gcctestdir/ld $(srcdir)/memory_test.t
 memory_test.stdout: memory_test
 	$(TEST_READELF) -lWS  $< > $@
 
-# Test that --gdb-index functions correctly.
+if HAVE_PUBNAMES
+
+# Test that --gdb-index functions correctly without gcc-generated pubnames.
 check_SCRIPTS += gdb_index_test_1.sh
 check_DATA += gdb_index_test_1.stdout
 MOSTLYCLEANFILES += gdb_index_test_1.stdout gdb_index_test_1
 gdb_index_test.o: gdb_index_test.cc
-	$(CXXCOMPILE) -O0 -g -c -o $@ $<
+	$(CXXCOMPILE) -O0 -g -gno-pubnames -c -o $@ $<
 gdb_index_test_1: gdb_index_test.o gcctestdir/ld
 	$(CXXLINK) -Bgcctestdir/ -Wl,--gdb-index $<
 gdb_index_test_1.stdout: gdb_index_test_1
@@ -1980,6 +1994,7 @@ gdb_index_test_1.stdout: gdb_index_test_1
 
 if HAVE_ZLIB
 
+# Test that --gdb-index functions correctly with compressed debug sections.
 check_SCRIPTS += gdb_index_test_2.sh
 check_DATA += gdb_index_test_2.stdout
 MOSTLYCLEANFILES += gdb_index_test_2.stdout gdb_index_test_2
@@ -1992,7 +2007,7 @@ gdb_index_test_2.stdout: gdb_index_test_2
 
 endif HAVE_ZLIB
 
-# Another simple C test (DW_AT_high_pc encoding) for --gdb-index
+# Another simple C test (DW_AT_high_pc encoding) for --gdb-index.
 check_SCRIPTS += gdb_index_test_3.sh
 check_DATA += gdb_index_test_3.stdout
 MOSTLYCLEANFILES += gdb_index_test_3.stdout gdb_index_test_3
@@ -2003,6 +2018,18 @@ gdb_index_test_3: gdb_index_test_3.o gcctestdir/ld
 gdb_index_test_3.stdout: gdb_index_test_3
 	$(TEST_READELF) --debug-dump=gdb_index $< > $@
 
+# Test that --gdb-index functions correctly with gcc-generated pubnames.
+check_SCRIPTS += gdb_index_test_4.sh
+check_DATA += gdb_index_test_4.stdout
+MOSTLYCLEANFILES += gdb_index_test_4.stdout gdb_index_test_4
+gdb_index_test_pub.o: gdb_index_test.cc
+	$(CXXCOMPILE) -O0 -g -gpubnames -c -o $@ $<
+gdb_index_test_4: gdb_index_test_pub.o gcctestdir/ld
+	$(CXXLINK) -Bgcctestdir/ -Wl,--gdb-index $<
+gdb_index_test_4.stdout: gdb_index_test_4
+	$(TEST_READELF) --debug-dump=gdb_index $< > $@
+
+endif HAVE_PUBNAMES
 
 # End-to-end incremental linking tests.
 # Incremental linking is currently supported only on the x86_64 target.

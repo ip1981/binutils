@@ -111,20 +111,6 @@ extern "C" void *gold_mremap(void *, size_t, size_t, int);
 # define MREMAP_MAYMOVE 1
 #endif
 
-#ifndef HAVE_POSIX_FALLOCATE
-// A dummy, non general, version of posix_fallocate.  Here we just set
-// the file size and hope that there is enough disk space.  FIXME: We
-// could allocate disk space by walking block by block and writing a
-// zero byte into each block.
-static int
-posix_fallocate(int o, off_t offset, off_t len)
-{
-  if (ftruncate(o, offset + len) < 0)
-    return errno;
-  return 0;
-}
-#endif // !defined(HAVE_POSIX_FALLOCATE)
-
 // Mingw does not have S_ISLNK.
 #ifndef S_ISLNK
 # define S_ISLNK(mode) 0
@@ -132,6 +118,27 @@ posix_fallocate(int o, off_t offset, off_t len)
 
 namespace gold
 {
+
+// A wrapper around posix_fallocate.  If we don't have posix_fallocate,
+// or the --no-posix-fallocate option is set, we try the fallocate
+// system call directly.  If that fails, we use ftruncate to set
+// the file size and hope that there is enough disk space.
+
+static int
+gold_fallocate(int o, off_t offset, off_t len)
+{
+#ifdef HAVE_POSIX_FALLOCATE
+  if (parameters->options().posix_fallocate())
+    return ::posix_fallocate(o, offset, len);
+#endif // defined(HAVE_POSIX_FALLOCATE)
+#ifdef HAVE_FALLOCATE
+  if (::fallocate(o, 0, offset, len) == 0)
+    return 0;
+#endif // defined(HAVE_FALLOCATE)
+  if (::ftruncate(o, offset + len) < 0)
+    return errno;
+  return 0;
+}
 
 // Output_data variables.
 
@@ -1694,6 +1701,18 @@ Output_data_got<size, big_endian>::add_got_entry_pair(Got_entry got_entry_1,
     }
 }
 
+// Replace GOT entry I with a new value.
+
+template<int size, bool big_endian>
+void
+Output_data_got<size, big_endian>::replace_got_entry(
+    unsigned int i,
+    Got_entry got_entry)
+{
+  gold_assert(i < this->entries_.size());
+  this->entries_[i] = got_entry;
+}
+
 // Output_data_dynamic::Dynamic_entry methods.
 
 // Write out the entry.
@@ -2238,7 +2257,10 @@ Output_section::Output_section(const char* name, elfcpp::Elf_Word type,
     always_keeps_input_sections_(false),
     has_fixed_layout_(false),
     is_patch_space_allowed_(false),
+    is_unique_segment_(false),
     tls_offset_(0),
+    extra_segment_flags_(0),
+    segment_alignment_(0),
     checkpoint_(NULL),
     lookup_maps_(new Output_section_lookup_maps),
     free_list_(),
@@ -3972,7 +3994,8 @@ Output_segment::Output_segment(elfcpp::Elf_Word type, elfcpp::Elf_Word flags)
     flags_(flags),
     is_max_align_known_(false),
     are_addresses_set_(false),
-    is_large_data_segment_(false)
+    is_large_data_segment_(false),
+    is_unique_segment_(false)
 {
   // The ELF ABI specifies that a PT_TLS segment always has PF_R as
   // the flags.
@@ -5014,7 +5037,7 @@ Output_file::map_no_anonymous(bool writable)
   // but that would be a more significant performance hit.
   if (writable)
     {
-      int err = ::posix_fallocate(o, 0, this->file_size_);
+      int err = gold_fallocate(o, 0, this->file_size_);
       if (err != 0)
        gold_fatal(_("%s: %s"), this->name_, strerror(err));
     }
@@ -5041,7 +5064,8 @@ Output_file::map_no_anonymous(bool writable)
 void
 Output_file::map()
 {
-  if (this->map_no_anonymous(true))
+  if (parameters->options().mmap_output_file()
+      && this->map_no_anonymous(true))
     return;
 
   // The mmap call might fail because of file system issues: the file

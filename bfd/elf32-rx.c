@@ -1926,14 +1926,14 @@ elf32_rx_relax_section (bfd *                  abfd,
       if (shndx_buf == NULL)
 	goto error_return;
       if (bfd_seek (abfd, shndx_hdr->sh_offset, SEEK_SET) != 0
-	  || bfd_bread ((PTR) shndx_buf, amt, abfd) != amt)
+	  || bfd_bread (shndx_buf, amt, abfd) != amt)
 	goto error_return;
       shndx_hdr->contents = (bfd_byte *) shndx_buf;
     }
 
   /* Get a copy of the native relocations.  */
   internal_relocs = (_bfd_elf_link_read_relocs
-		     (abfd, sec, (PTR) NULL, (Elf_Internal_Rela *) NULL,
+		     (abfd, sec, NULL, (Elf_Internal_Rela *) NULL,
 		      link_info->keep_memory));
   if (internal_relocs == NULL)
     goto error_return;
@@ -3060,7 +3060,8 @@ rx_elf_object_p (bfd * abfd)
 	{
 	  Elf_Internal_Shdr *sec = elf_tdata(abfd)->elf_sect_ptr[u];
 
-	  if (phdr[i].p_offset <= (bfd_vma) sec->sh_offset
+	  if (phdr[i].p_filesz
+	      && phdr[i].p_offset <= (bfd_vma) sec->sh_offset
 	      && (bfd_vma)sec->sh_offset <= phdr[i].p_offset + (phdr[i].p_filesz - 1))
 	    {
 	      /* Found one!  The difference between the two addresses,
@@ -3084,7 +3085,8 @@ rx_elf_object_p (bfd * abfd)
       bsec = abfd->sections;
       while (bsec)
 	{
-	  if (phdr[i].p_vaddr <= bsec->vma
+	  if (phdr[i].p_filesz
+	      && phdr[i].p_vaddr <= bsec->vma
 	      && bsec->vma <= phdr[i].p_vaddr + (phdr[i].p_filesz - 1))
 	    {
 	      bsec->lma = phdr[i].p_paddr + (bsec->vma - phdr[i].p_vaddr);

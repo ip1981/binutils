@@ -1,12 +1,284 @@
+2012-08-24  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* readelf.c (arm_attr_tag_CPU_arch): Update for ARMv8.
+	(arm_attr_tag_FP_arch): Likewise.
+	(arm_attr_tag_Advanced_SIMD_arch): Likewise.
+
+2012-08-17  Yuri Chornoivan  <yurchor@ukr.net>
+
+	* doc/binutils.texi, * objdump.c, * od-xcoff.c: Typo fixes.
+
+2012-08-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR binutils/14481
+	* Makefile.am (BFDTEST1_PROG): New.
+	(TEST_PROGS): Likewise.
+	(bfdtest1_DEPENDENCIES): Likewise.
+	(noinst_PROGRAMS): Add $(TEST_PROGS).
+	* Makefile.in: Regenerated.
+
+	* bfdtest1.c: New file.
+
+2012-08-13  Ian Bolton  <ian.bolton@arm.com>
+            Laurent Desnogues  <laurent.desnogues@arm.com>
+            Jim MacArthur  <jim.macarthur@arm.com>
+            Marcus Shawcroft  <marcus.shawcroft@arm.com>
+            Nigel Stephens  <nigel.stephens@arm.com>
+            Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+            Richard Earnshaw  <rearnsha@arm.com>
+            Sofiane Naci  <sofiane.naci@arm.com>
+            Tejas Belagod  <tejas.belagod@arm.com>
+            Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* readelf.c (guess_is_rela): Handle EM_AARCH64.
+	(get_machine_name): Likewise.
+	(get_aarch64_segment_type): New function.
+	(get_segment_type): Handle EM_AARCH64 by calling the new function.
+	(get_aarch64_section_type_name): New function.
+	(get_section_type_name): Handle EM_AARCH64 by calling the new function.
+	(is_32bit_abs_reloc): Handle EM_AARCH64.
+	(is_32bit_pcrel_reloc): Likewise.
+	(is_64bit_abs_reloc): Likewise.
+	(is_64bit_pcrel_reloc): Likewise.
+	(is_none_reloc): Likewise.
+
+2012-08-09  Nick Clifton  <nickc@redhat.com>
+
+	* po/vi.po: Updated Vietnamese translation.
+
+2012-08-03  Tom Tromey  <tromey@redhat.com>
+
+	* dlltool.c (scan_obj_file): Close arfile after calling
+	bfd_openr_next_archived_file.
+
+2012-08-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR binutils/14420
+	* dwarf.c (process_abbrev_section): Add attribute terminator.
+	Warn missing section terminator.
+	(get_FORM_name): Special check for 0 value.
+	(get_AT_name): Likewise.
+	(process_debug_info): Display zero abbrev number.  Check
+	attribute terminator.
+
+2012-07-30  Nick Clifton  <nickc@redhat.com>
+
+	* po/binutils.pot: Updated template.
+	* po/bg.po: Updated Bulgarian translation.
+	* po/es.po: Updated Spanish translation.
+	* po/fi.po: Updated Finnish translation.
+	* po/fr.po: Updated French translation.
+	* po/uk.po: Updated Ukranian translation.
+
+2012-07-28  Kai Tietz  <ktietz@redhat.com>
+
+	* rcparse.y (FILEVERSION): Use optcnumexpr instead of cnumexpr.
+	(PRODUCTVERSION): Likewise.
+
+2012-07-27  Mike Frysinger  <vapier@gentoo.org>
+
+	* configure.in (BFD_VERSION): Run bfd/configure --version and
+	parse the output of that.
+	* configure: Regenerate.
+
+2012-07-27  Tristan Gingold  <gingold@adacore.com>
+
+	* NEWS: Add marker for 2.23.
+
+2012-07-24  Teresa Johnson  <tejohnson@google.com>
+
+	* addr2line.c (find_address_in_section): Invoke
+        bfd_find_nearest_line_discriminator to get the discriminator.
+	(find_offset_in_section): Likewise.
+	(translate_addresses): Print discriminator if it is non-zero.
+	* objdump.c (show_line): Invoke
+        bfd_find_nearest_line_discriminator to get the discriminator,
+        and keep track of prev_discriminator. Print discriminator
+        if it is non-zero.
+	(disassemble_data): Initialize prev_discriminator.
+	(dump_reloc_set): Invoke bfd_find_nearest_line_discriminator
+        to get the discriminator, and keep track of last_discriminator.
+        Print discriminator if it is non-zero.
+
+2012-07-17  Nick Clifton  <nickc@redhat.com>
+
+	* elfcomm.c (setup_archive): Extract index table and symbol table
+	scanning code into...
+	(process_archive_index_and_symbols): ... this function and add
+	support for 64-bit index tables.
+	* elfcomm.h (struct archive_info): Change type of index_num and
+	index_array to elf_vma.
+	Add 'uses_64bit_indicies' field.
+	* readelf.c (process_archive): Fix support for 64-bit indicies.
+
+2012-07-03  Nick Clifton  <nickc@redhat.com>
+
+	* readelf.c (process_archive): Display member indicies when
+	dumping index.
+
+2012-07-02  Tom Tromey  <tromey@redhat.com>
+
+	* dwarf.c: Include gdb-index.h.
+	(display_gdb_index): Handle version 7.
+
+2012-06-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* nm.c (filter_symbols): Simplify global symbol handling.
+
+2012-06-29  Francois Gouget  <fgouget@codeweavers.com>
+
+	PR binutils/14302
+	* bucomm.c (print_arelt_descr): Correctly report the archive size
+	field (for 'ar tv').
+	* ar.c (print_contents): Use correct types for archive element
+	sizes (for 'ar p').
+	(extract_file): Likewise (for 'ar x').
+
+2012-06-29  Alan Modra  <amodra@gmail.com>
+
+	* readelf.c (is_16bit_abs_reloc): Handle mn10200 reloc.
+
+2012-06-12  Tom Tromey  <tromey@redhat.com>
+
+	* dwarf-mode.el: Add final comment.  Bump version.
+	(dwarf-insert-substructure-button): Use string-to-number.
+	(dwarf-browse): Fix autoload cookie.
+
+2012-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf.c (read_and_display_attr_value): Handle
+	DW_FORM_GNU_ref_alt and DW_FORM_GNU_strp_alt.
+	(display_debug_macro): Handle DW_MACRO_GNU_define_indirect_alt,
+	DW_MACRO_GNU_undef_indirect_alt and
+	DW_MACRO_GNU_transparent_include_alt.
+
+2012-06-01  Alan Modra  <amodra@gmail.com>
+
+	* addr2line.c (translate_addresses): Truncate input addresses to
+	arch_size bits.  Avoid undefined shift.  Print '?' for zero line.
+
+2012-05-30  Nick Clifton  <nickc@redhat.com>
+
+	* readelf.c (process_section_headers): Correct bug in previous
+	delta - display full section type in wide mode.
+
+2012-05-28  Nick Clifton  <nickc@redhat.com>
+
+	* readelf.c (print_symbol): Display multibyte characters in symbol
+	names.
+	(process_section_headers): Use print_symbol.
+
+2012-05-18  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* Makefile.in: Regenerate.
+
+2012-05-17  Daniel Richard G.  <skunk@iskunk.org>
+	    Nick Clifton  <nickc@redhat.com>
+
+	PR 14072
+	* configure.in: Add check that sysdep.h has been included before
+	any system header files.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* unwind-ia64.h: Include config.h.
+
+2012-05-17  Alan Modra  <amodra@gmail.com>
+
+	* dwarf.c (process_debug_info): Display abbrev offset in hex.
+	(display_debug_abbrev): Show offset of abbrev.
+
+2012-05-17  Alan Modra  <amodra@gmail.com>
+
+	* dwarf.c (display_debug_ranges): Don't report more than one use
+	of the same range set as an overlap.
+
+2012-05-16  Daniel Richard G.  <skunk@iskunk.org>
+
+	PR binutils/13558
+	* Makefile.am (CFILES): Add syslex_wrap.c.
+	(sysinfo): Depend upon syslex_wrap.o.
+	(syslex_wrap.o): New rule.
+	(syslex.o): Delete rule.
+	* syslex_wrap.c: New file.
+	* Makefile.in: Regenerate.
+
+2012-05-15  James Murray <jsm@jsm-net.demon.co.uk>
+
+	* readelf.c (get_machine_name): Update m68hc12 entry.
+
+2012-05-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* objdump.c (disassemble_bytes): Print addend as signed.
+	(dump_reloc_set): Likewise.
+
+2012-05-04  Sterling Augustine  <saugustine@google.com>
+	    Cary Coutant  <ccoutant@google.com>
+
+	* doc/binutils.texi: Add --dwarf-check option.
+	* dwarf.c (dwarf_check): New global flag.
+	(fetch_indexed_string): New function.
+	(fetch_indexed_value): New function.
+	(get_FORM_name): Add DW_FORM_GNU_str_index and DW_FORM_GNU_addr_index.
+	(decode_location_expression): Add DW_OP_GNU_addr_index.
+	(read_and_display_attr_value): Add DW_FORM_GNU_str_index,
+	DW_FORM_GNU_addr_index, DW_AT_GNU_addr_base, and DW_AT_GNU_ranges_base.
+	(get_AT_name): Add new attributes for Fission.
+	(process_debug_info): Load new debug sections for Fission.
+	(load_debug_info): Check for .debug_info.dwo section.
+	(display_loc_list, display_loc_list_dwo): New functions.
+	(display_debug_loc): Move logic to above two functions.
+	(display_debug_info): Choose abbrev section based on info section.
+	(display_debug_types): Likewise.
+	(display_trace_info): Likewise.
+	(comp_addr_base): New function.
+	(display_debug_addr): New function.
+	(display_debug_str_offsets): New function.
+	(display_debug_ranges): Allow missing range lists.  Suppress
+	diagnostics if dwarf_check not set.
+	(debug_displays): Add column to select abbrev section.
+	* dwarf.h (enum dwarf_section_display_enum): Add new debug sections
+	for Fission.
+	(struct dwarf_section): Add abbrev_sec field.
+	(struct dwarf_section_display): New type.
+	(debug_info): Add addr_base, ranges_base fields.
+	(dwarf_check): New global variable.
+	* objdump.c (usage): Add --dwarf-check option.
+	(enum option_values): Add OPTION_DWARF_CHECK.
+	(long_options): Add --dwarf-check.
+	(main): Likewise.
+	* readelf.c (OPTION_DWARF_CHECK): New macro.
+	(options): Add --dwarf-check.
+	(parse_args): Likewise.
+	(process_section_headers): Use const_strneq instead of
+	streq.
+
+2012-05-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR binutils/14088
+	* readelf.c (dump_relocations): Always display addend as
+	signed hex number.
+
+2012-05-11  Daniel Richard G.  <skunk@iskunk.org>
+
+	PR binutils/14028
+	* configure.in: Invoke ACX_HEADER_STRING.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* sysdep.h: If STRINGS_WITH_STRING is defined then include both
+	string.h and strings.h.
+
 2012-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf.c (read_and_display_attr_value): Don't look up tag from
 	abbrev for DW_FORM_ref_addr.
 
 2012-05-08  Sean Keys  <skeys@ipdatasys.com>
-	
+
 	* binutils/MAINTAINERS: Added my entry to the maintainers secion.
- 
+
 2012-05-08  Cary Coutant  <ccoutant@google.com>
 
 	* doc/binutils.texi (objcopy): Add --strip-dwo, --extract-dwo options.

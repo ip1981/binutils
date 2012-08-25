@@ -48,6 +48,7 @@
 #ifdef HAVE_ZLIB_H
 #include <zlib.h>
 #endif
+#include <wchar.h>
 
 #if __GNUC__ >= 2
 /* Define BFD64 here, even if our default architecture is 32 bit ELF
@@ -90,6 +91,7 @@
 
 #define RELOC_MACROS_GEN_FUNC
 
+#include "elf/aarch64.h"
 #include "elf/alpha.h"
 #include "elf/arc.h"
 #include "elf/arm.h"
@@ -383,93 +385,89 @@ print_vma (bfd_vma vma, print_mode mode)
   return 0;
 }
 
-/* Display a symbol on stdout.  Handles the display of non-printing characters.
+/* Display a symbol on stdout.  Handles the display of control characters and
+   multibye characters.
 
-   If DO_WIDE is not true then format the symbol to be at most WIDTH characters,
-   truncating as necessary.  If WIDTH is negative then format the string to be
-   exactly - WIDTH characters, truncating or padding as necessary.
+   Display at most abs(WIDTH) characters, truncating as necessary, unless do_wide is true.
+
+   If WIDTH is negative then ensure that the output is at least (- WIDTH) characters,
+   padding as necessary.
 
    Returns the number of emitted characters.  */
 
 static unsigned int
 print_symbol (int width, const char *symbol)
 {
-  const char *c;
   bfd_boolean extra_padding = FALSE;
-  unsigned int num_printed = 0;
+  int num_printed = 0;
+  mbstate_t state;
+  int width_remaining;
 
-  if (do_wide)
-    {
-      /* Set the width to a very large value.  This simplifies the
-	 code below.  */
-      width = INT_MAX;
-    }
-  else if (width < 0)
+  if (width < 0)
     {
       /* Keep the width positive.  This also helps.  */
       width = - width;
       extra_padding = TRUE;
-    }
+    }  
 
-  while (width)
+  if (do_wide)
+    /* Set the remaining width to a very large value.
+       This simplifies the code below.  */
+    width_remaining = INT_MAX;
+  else
+    width_remaining = width;
+
+  /* Initialise the multibyte conversion state.  */
+  memset (& state, 0, sizeof (state));
+
+  while (width_remaining)
     {
-      int len;
+      size_t  n;
+      wchar_t w;
+      const char c = *symbol++;
 
-      c = symbol;
-
-      /* Look for non-printing symbols inside the symbol's name.
-	 This test is triggered in particular by the names generated
-	 by the assembler for local labels.  */
-      while (ISPRINT (*c))
-	c++;
-
-      len = c - symbol;
-
-      if (len)
-	{
-	  if (len > width)
-	    len = width;
-
-	  printf ("%.*s", len, symbol);
-
-	  width -= len;
-	  num_printed += len;
-	}
-
-      if (*c == 0 || width == 0)
+      if (c == 0)
 	break;
 
-      /* Now display the non-printing character, if
-	 there is room left in which to dipslay it.  */
-      if ((unsigned char) *c < 32)
+      /* Do not print control characters directly as they can affect terminal
+	 settings.  Such characters usually appear in the names generated
+	 by the assembler for local labels.  */
+      if (ISCNTRL (c))
 	{
-	  if (width < 2)
+	  if (width_remaining < 2)
 	    break;
 
-	  printf ("^%c", *c + 0x40);
-
-	  width -= 2;
+	  printf ("^%c", c + 0x40);
+	  width_remaining -= 2;
 	  num_printed += 2;
+	}
+      else if (ISPRINT (c))
+	{
+	  putchar (c);
+	  width_remaining --;
+	  num_printed ++;
 	}
       else
 	{
-	  if (width < 6)
-	    break;
+	  /* Let printf do the hard work of displaying multibyte characters.  */
+	  printf ("%.1s", symbol - 1);
+	  width_remaining --;
+	  num_printed ++;
 
-	  printf ("<0x%.2x>", (unsigned char) *c);
-
-	  width -= 6;
-	  num_printed += 6;
+	  /* Try to find out how many bytes made up the character that was
+	     just printed.  Advance the symbol pointer past the bytes that
+	     were displayed.  */
+	  n = mbrtowc (& w, symbol - 1, MB_CUR_MAX, & state);
+	  if (n != (size_t) -1 && n != (size_t) -2 && n > 0)
+	    symbol += (n - 1);
 	}
-
-      symbol = c + 1;
     }
 
-  if (extra_padding && width > 0)
+  if (extra_padding && num_printed < width)
     {
       /* Fill in the remaining spaces.  */
-      printf ("%-*s", width, " ");
-      num_printed += 2;
+      printf ("%-*s", width - num_printed, " ");
+      num_printed = width;
     }
 
   return num_printed;
@@ -554,6 +552,7 @@ guess_is_rela (unsigned int e_machine)
       /* Targets that use RELA relocations.  */
     case EM_68K:
     case EM_860:
+    case EM_AARCH64:
     case EM_ADAPTEVA_EPIPHANY:
     case EM_ALPHA:
     case EM_ALTERA_NIOS2:
@@ -986,6 +985,10 @@ dump_relocations (FILE * file,
 	  rtype = NULL;
 	  break;
 
+	case EM_AARCH64:
+	  rtype = elf_aarch64_reloc_type (type);
+	  break;
+
 	case EM_M32R:
 	case EM_CYGNUS_M32R:
 	  rtype = elf_m32r_reloc_type (type);
@@ -1387,9 +1390,13 @@ dump_relocations (FILE * file,
 	}
       else if (is_rela)
 	{
-	  printf ("%*c", is_32bit_elf ?
-		  (do_wide ? 34 : 28) : (do_wide ? 26 : 20), ' ');
-	  print_vma (rels[i].r_addend, LONG_HEX);
+	  bfd_signed_vma off = rels[i].r_addend;
+
+	  printf ("%*c", is_32bit_elf ? 12 : 20, ' ');
+	  if (off < 0)
+	    printf ("-%" BFD_VMA_FMT "x", - off);
+	  else
+	    printf ("%" BFD_VMA_FMT "x", off);
 	}
 
       if (elf_header.e_machine == EM_SPARCV9
@@ -1829,6 +1836,7 @@ get_machine_name (unsigned e_machine)
   switch (e_machine)
     {
     case EM_NONE:		return _("None");
+    case EM_AARCH64:		return "AArch64";
     case EM_M32:		return "WE32100";
     case EM_SPARC:		return "Sparc";
     case EM_SPU:		return "SPU";
@@ -1864,7 +1872,6 @@ get_machine_name (unsigned e_machine)
     case EM_IA_64:		return "Intel IA-64";
     case EM_MIPS_X:		return "Stanford MIPS-X";
     case EM_COLDFIRE:		return "Motorola Coldfire";
-    case EM_68HC12:		return "Motorola M68HC12";
     case EM_ALPHA:		return "Alpha";
     case EM_CYGNUS_D10V:
     case EM_D10V:		return "d10v";
@@ -1899,6 +1906,7 @@ get_machine_name (unsigned e_machine)
     case EM_ST9PLUS:		return "STMicroelectronics ST9+ 8/16 bit microcontroller";
     case EM_ST7:		return "STMicroelectronics ST7 8-bit microcontroller";
     case EM_68HC16:		return "Motorola MC68HC16 Microcontroller";
+    case EM_68HC12:		return "Motorola MC68HC12 Microcontroller";
     case EM_68HC11:		return "Motorola MC68HC11 Microcontroller";
     case EM_68HC08:		return "Motorola MC68HC08 Microcontroller";
     case EM_68HC05:		return "Motorola MC68HC05 Microcontroller";
@@ -2694,6 +2702,20 @@ get_osabi_name (unsigned int osabi)
 }
 
 static const char *
+get_aarch64_segment_type (unsigned long type)
+{
+  switch (type)
+    {
+    case PT_AARCH64_ARCHEXT:
+      return "AARCH64_ARCHEXT";
+    default:
+      break;
+    }
+
+  return NULL;
+}
+
+static const char *
 get_arm_segment_type (unsigned long type)
 {
   switch (type)
@@ -2815,6 +2837,9 @@ get_segment_type (unsigned long p_type)
 
 	  switch (elf_header.e_machine)
 	    {
+	    case EM_AARCH64:
+	      result = get_aarch64_segment_type (p_type);
+	      break;
 	    case EM_ARM:
 	      result = get_arm_segment_type (p_type);
 	      break;
@@ -2976,6 +3001,19 @@ get_x86_64_section_type_name (unsigned int sh_type)
 }
 
 static const char *
+get_aarch64_section_type_name (unsigned int sh_type)
+{
+  switch (sh_type)
+    {
+    case SHT_AARCH64_ATTRIBUTES:
+      return "AARCH64_ATTRIBUTES";
+    default:
+      break;
+    }
+  return NULL;
+}
+
+static const char *
 get_arm_section_type_name (unsigned int sh_type)
 {
   switch (sh_type)
@@ -3074,6 +3112,9 @@ get_section_type_name (unsigned int sh_type)
 	    case EM_K1OM:
 	      result = get_x86_64_section_type_name (sh_type);
 	      break;
+	    case EM_AARCH64:
+	      result = get_aarch64_section_type_name (sh_type);
+	      break;
 	    case EM_ARM:
 	      result = get_arm_section_type_name (sh_type);
 	      break;
@@ -3124,6 +3165,7 @@ get_section_type_name (unsigned int sh_type)
 #define OPTION_DYN_SYMS		513
 #define OPTION_DWARF_DEPTH	514
 #define OPTION_DWARF_START	515
+#define OPTION_DWARF_CHECK	516
 
 static struct option options[] =
 {
@@ -3159,6 +3201,7 @@ static struct option options[] =
 
   {"dwarf-depth",      required_argument, 0, OPTION_DWARF_DEPTH},
   {"dwarf-start",      required_argument, 0, OPTION_DWARF_START},
+  {"dwarf-check",      no_argument, 0, OPTION_DWARF_CHECK},
 
   {"version",	       no_argument, 0, 'v'},
   {"wide",	       no_argument, 0, 'W'},
@@ -3426,6 +3469,9 @@ parse_args (int argc, char ** argv)
 
 	    dwarf_start_die = strtoul (optarg, & cp, 0);
 	  }
+	  break;
+	case OPTION_DWARF_CHECK:
+	  dwarf_check = 1;
 	  break;
 	case OPTION_DYN_SYMS:
 	  do_dyn_syms++;
@@ -4635,19 +4681,19 @@ process_section_headers (FILE * file)
             name += sizeof (".debug_") - 1;
 
 	  if (do_debugging
-	      || (do_debug_info     && streq (name, "info"))
-	      || (do_debug_info     && streq (name, "types"))
-	      || (do_debug_abbrevs  && streq (name, "abbrev"))
-	      || (do_debug_lines    && streq (name, "line"))
-	      || (do_debug_pubnames && streq (name, "pubnames"))
-	      || (do_debug_pubtypes && streq (name, "pubtypes"))
-	      || (do_debug_aranges  && streq (name, "aranges"))
-	      || (do_debug_ranges   && streq (name, "ranges"))
-	      || (do_debug_frames   && streq (name, "frame"))
-	      || (do_debug_macinfo  && streq (name, "macinfo"))
-	      || (do_debug_macinfo  && streq (name, "macro"))
-	      || (do_debug_str      && streq (name, "str"))
-	      || (do_debug_loc      && streq (name, "loc"))
+	      || (do_debug_info     && const_strneq (name, "info"))
+	      || (do_debug_info     && const_strneq (name, "types"))
+	      || (do_debug_abbrevs  && const_strneq (name, "abbrev"))
+	      || (do_debug_lines    && const_strneq (name, "line"))
+	      || (do_debug_pubnames && const_strneq (name, "pubnames"))
+	      || (do_debug_pubtypes && const_strneq (name, "pubtypes"))
+	      || (do_debug_aranges  && const_strneq (name, "aranges"))
+	      || (do_debug_ranges   && const_strneq (name, "ranges"))
+	      || (do_debug_frames   && const_strneq (name, "frame"))
+	      || (do_debug_macinfo  && const_strneq (name, "macinfo"))
+	      || (do_debug_macinfo  && const_strneq (name, "macro"))
+	      || (do_debug_str      && const_strneq (name, "str"))
+	      || (do_debug_loc      && const_strneq (name, "loc"))
 	      )
 	    request_dump_bynumber (i, DEBUG_DUMP);
 	}
@@ -4728,22 +4774,20 @@ process_section_headers (FILE * file)
        i < elf_header.e_shnum;
        i++, section++)
     {
+      printf ("  [%2u] ", i);
       if (do_section_details)
 	{
-	  printf ("  [%2u] %s\n",
-		  i,
-		  SECTION_NAME (section));
-	  if (is_32bit_elf || do_wide)
-	    printf ("       %-15.15s ",
-		    get_section_type_name (section->sh_type));
+	  print_symbol (INT_MAX, SECTION_NAME (section));
+	  printf ("\n      ");
 	}
       else
-	printf ((do_wide ? "  [%2u] %-17s %-15s "
-			 : "  [%2u] %-17.17s %-15.15s "),
-		i,
-		SECTION_NAME (section),
-		get_section_type_name (section->sh_type));
-
+	{
+	  print_symbol (-17, SECTION_NAME (section));
+	}
+      
+      printf (do_wide ? " %-15s " : " %-15.15s ",
+	      get_section_type_name (section->sh_type));
+      
       if (is_32bit_elf)
 	{
 	  const char * link_too_big = NULL;
@@ -9766,6 +9810,8 @@ is_32bit_abs_reloc (unsigned int reloc_type)
       return reloc_type == 1; /* R_860_32.  */
     case EM_960:
       return reloc_type == 2; /* R_960_32.  */
+    case EM_AARCH64:
+      return reloc_type == 258; /* R_AARCH64_ABS32 */
     case EM_ALPHA:
       return reloc_type == 1; /* R_ALPHA_REFLONG.  */
     case EM_ARC:
@@ -9920,6 +9966,8 @@ is_32bit_pcrel_reloc (unsigned int reloc_type)
       return reloc_type == 2;  /* R_386_PC32.  */
     case EM_68K:
       return reloc_type == 4;  /* R_68K_PC32.  */
+    case EM_AARCH64:
+      return reloc_type == 261; /* R_AARCH64_PREL32 */
     case EM_ADAPTEVA_EPIPHANY:
       return reloc_type == 6;
     case EM_ALPHA:
@@ -9974,6 +10022,8 @@ is_64bit_abs_reloc (unsigned int reloc_type)
 {
   switch (elf_header.e_machine)
     {
+    case EM_AARCH64:
+      return reloc_type == 257;	/* R_AARCH64_ABS64.  */
     case EM_ALPHA:
       return reloc_type == 2; /* R_ALPHA_REFQUAD.  */
     case EM_IA_64:
@@ -10010,6 +10060,8 @@ is_64bit_pcrel_reloc (unsigned int reloc_type)
 {
   switch (elf_header.e_machine)
     {
+    case EM_AARCH64:
+      return reloc_type == 260;	/* R_AARCH64_PREL64.  */
     case EM_ALPHA:
       return reloc_type == 11; /* R_ALPHA_SREL64.  */
     case EM_IA_64:
@@ -10089,6 +10141,9 @@ is_16bit_abs_reloc (unsigned int reloc_type)
     case EM_XC16X:
     case EM_C166:
       return reloc_type == 2; /* R_XC16C_ABS_16.  */
+    case EM_CYGNUS_MN10200:
+    case EM_MN10200:
+      return reloc_type == 2; /* R_MN10200_16.  */
     case EM_CYGNUS_MN10300:
     case EM_MN10300:
       return reloc_type == 2; /* R_MN10300_16.  */
@@ -10136,6 +10191,8 @@ is_none_reloc (unsigned int reloc_type)
     case EM_XC16X:
     case EM_C166:    /* R_XC16X_NONE.  */
       return reloc_type == 0;
+    case EM_AARCH64:
+      return reloc_type == 0 || reloc_type == 256;
     case EM_XTENSA_OLD:
     case EM_XTENSA:
       return (reloc_type == 0      /* R_XTENSA_NONE.  */
@@ -10811,15 +10868,16 @@ typedef struct
 
 static const char * arm_attr_tag_CPU_arch[] =
   {"Pre-v4", "v4", "v4T", "v5T", "v5TE", "v5TEJ", "v6", "v6KZ", "v6T2",
-   "v6K", "v7", "v6-M", "v6S-M", "v7E-M"};
+   "v6K", "v7", "v6-M", "v6S-M", "v7E-M", "v8"};
 static const char * arm_attr_tag_ARM_ISA_use[] = {"No", "Yes"};
 static const char * arm_attr_tag_THUMB_ISA_use[] =
   {"No", "Thumb-1", "Thumb-2"};
 static const char * arm_attr_tag_FP_arch[] =
-  {"No", "VFPv1", "VFPv2", "VFPv3", "VFPv3-D16", "VFPv4", "VFPv4-D16"};
+  {"No", "VFPv1", "VFPv2", "VFPv3", "VFPv3-D16", "VFPv4", "VFPv4-D16",
+   "FP for ARMv8"};
 static const char * arm_attr_tag_WMMX_arch[] = {"No", "WMMXv1", "WMMXv2"};
 static const char * arm_attr_tag_Advanced_SIMD_arch[] =
-  {"No", "NEONv1", "NEONv1 with Fused-MAC"};
+  {"No", "NEONv1", "NEONv1 with Fused-MAC", "NEON for ARMv8"};
 static const char * arm_attr_tag_PCS_config[] =
   {"None", "Bare platform", "Linux application", "Linux DSO", "PalmOS 2004",
    "PalmOS (reserved)", "SymbianOS 2004", "SymbianOS (reserved)"};
@@ -13435,7 +13493,7 @@ process_archive (char * file_name, FILE * file, bfd_boolean is_thin_archive)
 	  unsigned long current_pos;
 
 	  printf (_("Index of archive %s: (%ld entries, 0x%lx bytes in the symbol table)\n"),
-		  file_name, arch.index_num, arch.sym_size);
+		  file_name, (long) arch.index_num, arch.sym_size);
 	  current_pos = ftell (file);
 
 	  for (i = l = 0; i < arch.index_num; i++)
@@ -13452,7 +13510,9 @@ process_archive (char * file_name, FILE * file, bfd_boolean is_thin_archive)
 
                       if (qualified_name != NULL)
                         {
-		          printf (_("Binary %s contains:\n"), qualified_name);
+		          printf (_("Contents of binary %s at offset "), qualified_name);
+			  (void) print_vma (arch.index_array[i], PREFIX_HEX);
+			  putchar ('\n');
 		          free (qualified_name);
 		        }
 		    }
@@ -13468,11 +13528,14 @@ process_archive (char * file_name, FILE * file, bfd_boolean is_thin_archive)
 	      l += strlen (arch.sym_table + l) + 1;
 	    }
 
-          if (l & 01)
-            ++l;
+	  if (arch.uses_64bit_indicies)
+	    l = (l + 7) & ~ 7;
+	  else
+	    l += l & 1;
+
 	  if (l < arch.sym_size)
-	    error (_("%s: symbols remain in the index symbol table, but without corresponding entries in the index table\n"),
-		   file_name);
+	    error (_("%s: %ld bytes remain in the symbol table, but without corresponding entries in the index table\n"),
+		   file_name, arch.sym_size - l);
 
 	  if (fseek (file, current_pos, SEEK_SET) != 0)
 	    {

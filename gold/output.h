@@ -2257,6 +2257,13 @@ class Output_data_got : public Output_data_got_base
     return got_offset;
   }
 
+  // Replace GOT entry I with a new constant.
+  void
+  replace_constant(unsigned int i, Valtype constant)
+  {
+    this->replace_got_entry(i, Got_entry(constant));
+  }
+
   // Reserve a slot in the GOT for a local symbol.
   void
   reserve_local(unsigned int i, Relobj* object, unsigned int sym_index,
@@ -2280,6 +2287,16 @@ class Output_data_got : public Output_data_got_base
   virtual void
   do_reserve_slot(unsigned int i)
   { this->free_list_.remove(i * got_size / 8, (i + 1) * got_size / 8); }
+
+  // Return the number of words in the GOT.
+  unsigned int
+  num_entries () const
+  { return this->entries_.size(); }
+
+  // Return the offset into the GOT of GOT entry I.
+  unsigned int
+  got_offset(unsigned int i) const
+  { return i * (got_size / 8); }
 
  private:
   // This POD class holds a single GOT entry.
@@ -2352,20 +2369,19 @@ class Output_data_got : public Output_data_got_base
   unsigned int
   add_got_entry_pair(Got_entry got_entry_1, Got_entry got_entry_2);
 
-  // Return the offset into the GOT of GOT entry I.
-  unsigned int
-  got_offset(unsigned int i) const
-  { return i * (got_size / 8); }
+  // Replace GOT entry I with a new value.
+  void
+  replace_got_entry(unsigned int i, Got_entry got_entry);
 
   // Return the offset into the GOT of the last entry added.
   unsigned int
   last_got_offset() const
-  { return this->got_offset(this->entries_.size() - 1); }
+  { return this->got_offset(this->num_entries() - 1); }
 
   // Set the size of the section.
   void
   set_got_size()
-  { this->set_current_data_size(this->got_offset(this->entries_.size())); }
+  { this->set_current_data_size(this->got_offset(this->num_entries())); }
 
   // The list of GOT entries.
   Got_entries entries_;
@@ -2819,6 +2835,10 @@ class Output_fill
     : is_big_endian_(parameters->target().is_big_endian())
   { }
 
+  virtual
+  ~Output_fill()
+  { }
+
   // Return the smallest size chunk of free space that can be
   // filled with a dummy compilation unit.
   size_t
@@ -3245,6 +3265,28 @@ class Output_section : public Output_data
   requires_postprocessing() const
   { return this->requires_postprocessing_; }
 
+  bool
+  is_unique_segment() const
+  { return this->is_unique_segment_; }
+
+  void
+  set_is_unique_segment()
+  { this->is_unique_segment_ = true; }
+
+  uint64_t extra_segment_flags() const
+  { return this->extra_segment_flags_; }
+
+  void
+  set_extra_segment_flags(uint64_t flags)
+  { this->extra_segment_flags_ = flags; }
+
+  uint64_t segment_alignment() const
+  { return this->segment_alignment_; }
+
+  void
+  set_segment_alignment(uint64_t align)
+  { this->segment_alignment_ = align; }
+  
   // If a section requires postprocessing, return the buffer to use.
   unsigned char*
   postprocessing_buffer() const
@@ -4196,9 +4238,17 @@ class Output_section : public Output_data
   bool has_fixed_layout_ : 1;
   // True if we can add patch space to this section.
   bool is_patch_space_allowed_ : 1;
+  // True if this output section goes into a unique segment.
+  bool is_unique_segment_ : 1;
   // For SHT_TLS sections, the offset of this section relative to the base
   // of the TLS segment.
   uint64_t tls_offset_;
+  // Additional segment flags, specified via linker plugin, when mapping some
+  // input sections to unique segments.
+  uint64_t extra_segment_flags_; 
+  // Segment alignment specified via linker plugin, when mapping some
+  // input sections to unique segments.
+  uint64_t segment_alignment_;
   // Saved checkpoint.
   Checkpoint_output_section* checkpoint_;
   // Fast lookup maps for merged and relaxed input sections.
@@ -4273,6 +4323,16 @@ class Output_segment
   void
   set_is_large_data_segment()
   { this->is_large_data_segment_ = true; }
+
+  bool
+  is_unique_segment() const
+  { return this->is_unique_segment_; }
+
+  // Mark segment as unique, happens when linker plugins request that
+  // certain input sections be mapped to unique segments.
+  void
+  set_is_unique_segment()
+  { this->is_unique_segment_ = true; }
 
   // Return the maximum alignment of the Output_data.
   uint64_t
@@ -4484,6 +4544,8 @@ class Output_segment
   bool are_addresses_set_ : 1;
   // Whether this segment holds large data sections.
   bool is_large_data_segment_ : 1;
+  // Whether this was marked as a unique segment via a linker plugin.
+  bool is_unique_segment_ : 1;
 };
 
 // This class represents the output file.

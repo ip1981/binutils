@@ -1,6 +1,6 @@
 /* Print SPARC instructions.
    Copyright 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
 
    This file is part of the GNU opcodes library.
@@ -20,9 +20,8 @@
    Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
    MA 02110-1301, USA.  */
 
-#include <stdio.h>
-
 #include "sysdep.h"
+#include <stdio.h>
 #include "opcode/sparc.h"
 #include "dis-asm.h"
 #include "libiberty.h"
@@ -551,7 +550,7 @@ print_insn_sparc (bfd_vma memaddr, disassemble_info *info)
 	      /* Can't do simple format if source and dest are different.  */
 	      continue;
 
-	  (*info->fprintf_func) (stream, opcode->name);
+	  (*info->fprintf_func) (stream, "%s", opcode->name);
 
 	  {
 	    const char *s;
@@ -705,7 +704,7 @@ print_insn_sparc (bfd_vma memaddr, disassemble_info *info)
 		    break;
 
 		  case ')':	/* 5 bit unsigned immediate from RS3.  */
-		    (info->fprintf_func) (stream, "%#x", X_RS3 (insn));
+		    (info->fprintf_func) (stream, "%#x", (unsigned int) X_RS3 (insn));
 		    break;
 
 		  case 'X':	/* 5 bit unsigned immediate.  */

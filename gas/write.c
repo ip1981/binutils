@@ -1019,6 +1019,10 @@ fixup_segment (fixS *fixP, segT this_segment)
 			      S_GET_NAME (fixP->fx_subsy),
 			      segment_name (sub_symbol_segment));
 	    }
+	  else if (sub_symbol_segment != undefined_section
+		   && ! bfd_is_com_section (sub_symbol_segment)
+		   && MD_APPLY_SYM_VALUE (fixP))
+	    add_number -= S_GET_VALUE (fixP->fx_subsy);
 	}
 
       if (fixP->fx_addsy)

@@ -11,6 +11,15 @@ AM_INIT_AUTOMAKE([no-dist parallel-tests])
 
 AM_CONFIG_HEADER(config.h:config.in)
 
+# PR 14072
+AH_VERBATIM([00_CONFIG_H_CHECK],
+[/* Check that config.h is #included before system headers
+   (this works only for glibc, but that should be enough).  */
+#if defined(__GLIBC__) && !defined(__CONFIG_H__)
+#  error config.h must be #included before system headers
+#endif
+#define __CONFIG_H__ 1])
+
 AC_ARG_WITH(sysroot,
 [  --with-sysroot[=DIR]    search for usr/lib et al within DIR],
 [sysroot=$withval], [sysroot=no])
@@ -490,7 +499,7 @@ AC_LANG_PUSH(C++)
 AC_CHECK_HEADERS(tr1/unordered_set tr1/unordered_map)
 AC_CHECK_HEADERS(ext/hash_map ext/hash_set)
 AC_CHECK_HEADERS(byteswap.h)
-AC_CHECK_FUNCS(mallinfo posix_fallocate readv sysconf times)
+AC_CHECK_FUNCS(mallinfo posix_fallocate fallocate readv sysconf times)
 AC_CHECK_DECLS([basename, ffs, asprintf, vasprintf, snprintf, vsnprintf, strverscmp, strndup, memmem])
 
 # Use of ::std::tr1::unordered_map::rehash causes undefined symbols
@@ -504,6 +513,25 @@ void bar() { ::std::tr1::unordered_map<int, int> x; x.rehash(10); }
 if test "$gold_cv_unordered_map_rehash" = "yes"; then
   AC_DEFINE(HAVE_TR1_UNORDERED_MAP_REHASH, 1,
 	    [Define if ::std::tr1::unordered_map::rehash is usable])
+fi
+
+# Use of tr1/unordered_map with off_t as a key is not supported on GCC
+# 4.1.xx when compiling in 32-bit mode with a 64-bit off_t type.
+AC_CACHE_CHECK([whether std::tr1::hash<off_t> is defined],
+[gold_cv_hash_off_t],
+[CXXFLAGS_hold=$CXXFLAGS
+CXXFLAGS="$CXXFLAGS $LFS_CFLAGS"
+AC_COMPILE_IFELSE([
+#include <sys/types.h>
+#include <tr1/unordered_map>
+std::tr1::hash<off_t> h;
+],
+[gold_cv_hash_off_t=yes],
+[gold_cv_hash_off_t=no])
+CXXFLAGS=$CFLAGS_hold])
+if test "$gold_cv_hash_off_t" = "yes"; then
+   AC_DEFINE(HAVE_TR1_HASH_OFF_T, 1,
+	     [Define if std::tr1::hash<off_t> is usable])
 fi
 
 # gcc 4.3.0 doesn't recognize the printf attribute on a template
@@ -533,6 +561,13 @@ if test "$gold_cv_stat_st_mtim" = "yes"; then
   AC_DEFINE(HAVE_STAT_ST_MTIM, 1,
 	    [Define if struct stat has a field st_mtim with timespec for mtime])
 fi
+
+dnl Check if gcc supports the -gpubnames option.
+save_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -gpubnames"
+AC_COMPILE_IFELSE([int i;], [have_pubnames=yes], [have_pubnames=no])
+CXXFLAGS="$save_CXXFLAGS"
+AM_CONDITIONAL(HAVE_PUBNAMES, test "$have_pubnames" = "yes")
 
 AC_LANG_POP(C++)
 

@@ -127,6 +127,9 @@ set build_tests {
   {"Build libdata1.so"
    "-shared" "-fPIC"
    {data1.c} {} "libdata1.so"}
+  {"Build libdata2.so"
+   "-shared" "-fPIC"
+   {data2.c} {} "libdata2.so"}
   {"Build libcomm1.o"
    "-r -nostdlib" ""
    {comm1.c} {} "libcomm1.o"}
@@ -167,6 +170,9 @@ set build_tests {
   {"Build libpr13250-3.o"
    "-r -nostdlib" ""
    {pr13250-3.c} {} "libpr13250-3.o"}
+  {"Build libpr14323-2.so"
+   "-shared" "-fPIC"
+   {pr14323-2.c} {} "libpr14323-2.so"}
 }
 
 run_cc_link_tests $build_tests
@@ -281,6 +287,9 @@ set run_tests {
     {"Run with libdata1.so"
      "tmpdir/libdata1.so" ""
      {dynbss1.c} "dynbss1" "pass.out"}
+    {"Run with libdata2.so"
+     "tmpdir/libdata2.so" ""
+     {weakdef1.c} "weakdef1" "pass.out"}
     {"Run with libfunc1.so comm1.o"
      "tmpdir/libfunc1.so tmpdir/comm1.o" ""
      {dummy.c} "comm1" "pass.out"}
@@ -296,6 +305,9 @@ set run_tests {
     {"Run with pr13250-3.c, libpr13250-1.so and libpr13250-2.so"
      "--as-needed tmpdir/pr13250-3.o tmpdir/libpr13250-1.so tmpdir/libpr13250-2.so" ""
      {dummy.c} "pr13250" "pass.out"}
+    {"Run with pr14323-1.c pr14323-2.so"
+     "tmpdir/libpr14323-2.so" ""
+     {pr14323-1.c} "pr14323" "pass.out"}
 }
 
 # NetBSD ELF systems do not currently support the .*_array sections.

@@ -1,3 +1,338 @@
+2012-08-24  Sriraman Tallam  <tmsriram@google.com>
+
+	* gold.cc (queue_middle_tasks): Call layout again when unique
+	segments for sections is desired.
+	* layout.cc (Layout::Layout): Initialize new members.
+	(Layout::get_output_section_flags): New function.
+	(Layout::choose_output_section): Call get_output_section_flags.
+	(Layout::layout): Make output section for mapping to a unique segment.
+	(Layout::insert_section_segment_map): New function.
+	(Layout::attach_allocated_section_to_segment): Make unique segment for
+	output sections marked so. 
+	(Layout::segment_precedes): Check for unique segments when sorting.
+	* layout.h (Layout::Unique_segment_info): New struct.
+	(Layout::Section_segment_map): New typedef.
+	(Layout::insert_section_segment_map): New function.
+	(Layout::get_output_section_flags): New function.
+	(Layout::is_unique_segment_for_sections_specified): New function.
+	(Layout::set_unique_segment_for_sections_specified): New function.
+	(Layout::unique_segment_for_sections_specified_): New member.
+	(Layout::section_segment_map_): New member.
+	* object.cc (Sized_relobj_file<size, big_endian>::do_layout):
+	Rename is_gc_pass_one to is_pass_one.
+	Rename is_gc_pass_two to is_pass_two.
+	Rename is_gc_or_icf to is_two_pass.
+	Check for which pass based on whether symbols data is present.
+	Make it two pass when unique segments for sections is desired.
+	* output.cc (Output_section::Output_section): Initialize new
+	members.
+	* output.h (Output_section::is_unique_segment): New function.
+	(Output_section::set_is_unique_segment): New function.
+	(Output_section::is_unique_segment_): New member.
+	(Output_section::extra_segment_flags): New function.
+	(Output_section::set_extra_segment_flags): New function.
+	(Output_section::extra_segment_flags_): New member.
+	(Output_section::segment_alignment): New function.
+	(Output_section::set_segment_alignment): New function.
+	(Output_section::segment_alignment_): New member.
+	(Output_segment::Output_segment): Initialize is_unique_segment_.
+	(Output_segment::is_unique_segment): New function.
+	(Output_segment::set_is_unique_segment): New function.
+	(Output_segment::is_unique_segment_): New member.
+	* plugin.cc (allow_unique_segment_for_sections): New function.
+	(unique_segment_for_sections): New function.
+	(Plugin::load): Add new functions to transfer vector.
+	* Makefile.am (plugin_final_layout.readelf.stdout): Add readelf output.
+	* Makefile.in: Regenerate.
+	* testsuite/plugin_final_layout.sh: Check if unique segment
+	functionality works.
+	* testsuite/plugin_section_order.c (onload): Check if new interfaces
+	are available.
+	(allow_unique_segment_for_sections): New global.
+	(unique_segment_for_sections): New global.
+	(claim_file_hook): Call allow_unique_segment_for_sections.
+	(all_symbols_read_hook): Call unique_segment_for_sections.
+	
+
+2012-08-22  Cary Coutant  <ccoutant@google.com>
+
+	* layout.cc (Layout::include_section): Don't assert on GROUP
+	sections with --emit-relocs.
+
+2012-08-21  Cary Coutant  <ccoutant@google.com>
+
+	* symtab.cc (Symbol_table::gc_mark_undef_symbols): Don't assert
+	if --export-dynamic-symbol names an undef symbol.
+
+2012-08-18  Alan Modra  <amodra@gmail.com>
+
+	* powerpc.cc: Formatting and white space.
+	(Powerpc_relobj): Rename got2_section_ to special_.
+	Add opd_ent_shndx_ and opd_ent_off_ vectors.
+	(Powerpc_relobj::opd_shndx, init_opd, get_opd_ent, set_opd_ent,
+	scan_opd_relocs, do_read_relocs, opd_ent_ndx): New functions.
+	(Target_powerpc): Add Address typedef and invalid_address.  Use
+	throughout.
+	(Target_powerpc::is_branch_reloc): New function.
+	(Powerpc_relocate_functions): Add Address typedef, use throughout.
+	(Powerpc_relocate_functions:rela, rela_ua): Correct type used
+	for dst_mask, value and addend.
+	(Powerpc_relobj::do_find_special_sections): Find .opd for 64-bit.
+	(ld_2_1, cror_15_15_15, cror_31_31_31): New insn constants.
+	(Output_data_glink::do_write): Correct toc base.  Don't try to use
+	uint16_t for 24-bit offset.  Use get_output_section_offset and
+	check return.
+	(Target_powerpc::Scan::local): Handle more relocs.
+	(Target_powerpc::do_finalize_sections): Set up DT_PPC64_GLINK.
+	(Target_powerpc::Relocate::relocate): Correct toc base calculation.
+	Plug in toc restoring insn after plt calls.  Translate branches
+	to function descriptor symbols to corresponding entry point.
+	(Target_powerpc::relocate_for_relocatable): Check return from
+	get_output_section_offset.
+	* symtab.h: Comment typo.
+
+2012-08-14  Ian Lance Taylor  <iant@google.com>
+
+	* x86_64.cc (Target_x86_64::Scan::global): Fix erroneous call to
+	unsupported_relocal_local to call unsupported_reloc_global.
+
+2012-08-14  Nick Clifton  <nickc@redhat.com>
+
+	PR ld/14265
+	* script-sections.cc (Sections_element::output_section_name): Add
+	keep return parameter.
+	(Output_section_element::match_name): Add keep return parameter.
+	Return the value of the keep_ member.
+	* script-sections.h (class Output_section): Update
+	output_section_name prototype.
+	* layout.cc (Layout::keep_input_section): New public member
+	function.
+	(Layout::choose_output_section): Pass keep parameter to
+	output_section_name.
+	* layout.h (class Layout): Add keep_input_section.
+	* object.cc (Sized_relobj_file::do_layout): Check for kept input
+	sections.
+	* testsuite/Makefile.am: Add a test.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/pr14265.c: Source file for the test.
+	* testsuite/pr14265.t: Linker script for the test.
+	* testsuite/pr14265.sh: Shell script for the test.
+
+2012-08-14  Alan Modra  <amodra@gmail.com>
+
+	* target.h (Target::output_section_name): New function.
+	(Target::do_output_section_name): New function.
+	* layout.cc (Layout::choose_output_section): Call the above.
+	* powerpc.cc (Target_powerpc::do_output_section_name): New function.
+
+2012-08-14  Alan Modra  <amodra@gmail.com>
+
+	* powerpc.cc: Update for renamed R_PPC_REL16 relocs.
+	(Output_data_got_powerpc::do_write): Don't rely on base class lookup
+	for replace_constant call.
+	(Output_data_plt_powerpc::do_print_to_mapfile): New function.
+	(Output_data_glink::do_print_to_mapfile): New function.
+	(Target_powerpc::Scan::local): Ignore R_PPC64_TOCSAVE.
+	(Target_powerpc::Relocate::relocate): Likewise.
+
+2012-08-14  Alan Modra  <amodra@gmail.com>
+
+	* powerpc.cc (Powerpc_relobj::set_got2_shndx): Delete.
+	(Powerpc_relobj::do_find_special_sections): Don't use set_got2_shndx.
+	(Output_data_glink::add_entry,find_entry): Remove shndx param.
+	(class Glink_sym_ent): Rename from struct Glink_sym_ent.  Remove
+	all references to shndx_.  Handle special case for R_PPC_PLTREL24
+	here.
+	(class Glink_sym_ent_hash): Rename from struct Glink_sym_ent_hash.
+	(Output_data_glink::do_write): Retrieve got2_shdnx from object.
+	(Target_powerpc::make_plt_entry): Don't special case R_PPC_PLTREL24
+	here.
+	(Target_powerpc::Scan::global): Nor on make_plt_entry call.
+	(Target_powerpc::Relocate::relocate): Nor on glink->find_entry call.
+
+2012-08-12  Alan Modra  <amodra@gmail.com>
+
+	* powerpc.cc: Whitespace fixes.  Wrap overly long lines.
+	(glink insn constants): Use uint32_t.
+	(Output_data_glink::add_entry): Use insert, not [] operator.
+
+2012-08-11  Alan Modra  <amodra@gmail.com>
+
+	* object.h (Sized_relobj_file::find_shdr): New function.
+	(Sized_relobj_file::find_special_sections): New function.
+	* object.cc (Sized_relobj_file::find_shdr): New function.
+	(Sized_relobj_file::find_eh_frame): Use find_shdr.
+	(Sized_relobj_file::find_special_sections): New function, split out..
+	(Sized_relobj_file::do_read_symbols): ..from here.
+	* output.h (Output_data_got::replace_constant): New function.
+	(Output_data_got::num_entries): New function.
+	(Output_data_got::last_got_offset,set_got_size): Use num_entries.
+	(Output_data_got::got_offset): Protected rather than private.
+	(Output_data_got::replace_got_entry): New function.
+	* output.cc (Output_data_got::replace_got_entry): New function.
+	* powerpc.cc (class Powerpc_relobj): New.
+	(class Powerpc_relocate_functions): Delete all psymval variants or
+	convert to value,addend type.  Delete pcrela, pcrela_unaligned.
+	Implement _ha functions using corresponding _hi function.
+	(Powerpc_relobj::find_special_sections): New function.
+	(Target_powerpc::do_make_elf_object): New function.
+	(class Output_data_got_powerpc): New.
+	(class Output_data_glink): New.
+	(class Powerpc_scan_relocatable_reloc): New.
+	Many more changes througout file.
+
+2012-08-09  Nick Clifton  <nickc@redhat.com>
+
+	* po/vi.po: Updated Vietnamese translation.
+
+2012-08-07  Ian Lance Taylor  <iant@google.com>
+
+	* layout.cc (Layout::add_target_dynamic_tags): If
+	dynrel_includes_plt but no dyn_rel, emit dynamic reloc tags for
+	plt_rel.
+
+2012-07-30  Nick Clifton  <nickc@redhat.com>
+
+	* po/gold.pot: Updated template.
+	* po/es.po: Updated Spanish translation.
+
+2012-07-18  Cary Coutant  <ccoutant@google.com>
+
+	PR gold/14344
+	* configure.ac: Add check for -gpubnames support.
+	* configure: Regenerate.
+	* testsuite/Makefile.am (gdb_index_test_1): Add check for -gpubnames
+	support; force -gno-pubnames.
+	(gdb_index_test_2, gdb_index_test_3): Add check for -gpubnames
+	support.
+	(gdb_index_test_4): New test.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/gdb_index_test_1.sh: Refactor code into common file.
+	* testsuite/gdb_index_test_2.sh: Likewise.
+	* testsuite/gdb_index_test_3.sh: Don't look for space after colon.
+	* testsuite/gdb_index_test_4.sh: New script.
+	* testsuite/gdb_index_test_comm.sh: New script with common code;
+	don't look for space after colon.
+
+2012-07-16  Sriraman Tallam  <tmsriram@google.com>
+
+	* gold.cc (queue_middle_tasks): Update function order only after
+	deferred objects due to plugins are processed.
+
+2012-07-11  Ian Lance Taylor  <iant@google.com>
+
+	* arm.cc (Arm_relocate_functions::abs16): Remove unused typedef.
+	(Arm_exidx_cantunwind::do_fixed_endian_write): Likewise.
+	(Target_arm::scan_reloc_for_stub): Likewise.
+	* common.cc (Symbol_table::do_allocate_commons_list): Likewise.
+	* dwarf_reader.cc (Dwarf_die::skip_attributes): Likewise.
+	* ehframe.cc (Eh_frame::do_add_ehframe_input_section): Likewise.
+	* incremental.cc (Sized_incr_dynobj::do_add_symbols): Likewise.
+	* powerpc.cc (Target_powerpc::relocate_tls): Likewise.
+
+2012-07-10  Dodji Seketeli  <dodji@redhat.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	PR gold/14309
+	* configure.ac: Test whether std::tr1::hash<off_t> works.
+	* gold.h: Add a specialization for std::tr1::hash<off_t> if
+	needed.
+	* output.h (class Output_fill): Add virtual destructor.
+	* configure, config.in: Rebuild.
+
+2012-06-22  Roland McGrath  <mcgrathr@google.com>
+
+	* layout.cc (finalize): Define __ehdr_start symbol if applicable.
+
+2012-06-12  Rafael Ávila de Espíndola <respindola@mozilla.com>
+
+	* plugin.cc (Plugin::load): Handle position independent executables.
+
+2012-06-06  Cary Coutant  <ccoutant@google.com>
+
+	* layout.cc (gdb_sections): Remove ".debug_" prefixes,
+	add .debug_macro.
+	(lines_only_debug_sections): Likewise.
+	(gdb_fast_lookup_sections): New static array.
+	(is_gdb_debug_section): Rename formal parameter.
+	(is_lines_only_debug_section): Likewise.
+	(is_gdb_fast_lookup_section): New function.
+	(Layout::include_section): Check for ".zdebug_" prefix; pass
+	section name suffix to is_gdb_debug_section, et al.; check for
+	fast-lookup sections when building .gdb_index.
+	* options.h (--strip-debug-gdb): Update GDB version number.
+
+2012-06-06  Cary Coutant  <ccoutant@google.com>
+
+	* configure.ac: Add check for fallocate.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* options.h (class General_options): Add --mmap-output-file and
+	--posix-fallocate options.
+	* output.cc: (posix_fallocate): Remove; replace with...
+	(gold_fallocate): New function.
+	(Output_file::map_no_anonymous): Call gold_fallocate.
+	(Output_file::map): Check --mmap-output-file option.
+
+2012-06-05  Jing Yu  <jingyu@google.com>
+
+	* gold.h (textdomain): Add do {} to empty while(0).
+	(bindtextdomain): Likewise.
+
+2012-06-04  Cary Coutant  <ccoutant@google.com>
+
+	* dynobj.cc (Sized_dynobj::do_get_global_symbol_counts): Call
+	has_dynsym_index.
+
+2012-05-25  Sriraman Tallam  <tmsriram@google.com>
+
+	* symtab.cc (Symbol_table::define_special_symbol):
+	Initialize *poldsym to prevent uninitialized variable errors.
+
+2012-05-23  Cary Coutant  <ccoutant@google.com>
+
+	* layout.cc (Layout::section_name_mapping): Add rules to handle
+	exact match on .data.rel.ro.local or .data.rel.ro.
+	(Layout::output_section_name): Check for exact matches.
+
+2012-05-23  Cary Coutant  <ccoutant@google.com>
+
+	* layout.cc (Layout::section_name_mapping): Match .data.rel.ro.*
+	more carefully.
+
+2012-05-22  Cary Coutant  <ccoutant@google.com>
+
+	* symtab.cc (Symbol::should_add_dynsym_entry): Check for relocatable
+	object before exporting symbol.
+
+2012-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* testsuite/tls_test.cc: Include "config.h" first.
+	* testsuite/tls_test_c.c: Likewise.
+
+2012-05-17  Daniel Richard G.  <skunk@iskunk.org>
+	    Nick Clifton  <nickc@redhat.com>
+
+	PR 14072
+	* configure.in: Add check that sysdep.h has been included before
+	any system header files.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2012-05-14  Cary Coutant  <ccoutant@google.com>
+
+	* layout.cc (Layout::make_output_section): Mark .tdata section
+	as RELRO.
+	* testsuite/relro_test.cc: Add a TLS variable.
+
+2012-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR gold/14091
+	* x86_64.cc (Target_x86_64::Scan::local): For x32, generate
+	R_X86_64_RELATIVE64 instead of R_X86_64_RELATIVE in case of
+	R_X86_64_64.
+
 2012-05-08  Cary Coutant  <ccoutant@google.com>
 
 	* layout.cc (gdb_sections): Update GDB version, add .debug_addr.

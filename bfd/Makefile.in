@@ -47,7 +47,8 @@ DIST_COMMON = README ChangeLog $(srcdir)/Makefile.in \
 	$(top_srcdir)/po/Make-in $(srcdir)/../depcomp \
 	$(am__bfdinclude_HEADERS_DIST)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../bfd/bfd.m4 \
+	$(top_srcdir)/../bfd/warning.m4 $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gettext-sister.m4 \
 	$(top_srcdir)/../config/largefile.m4 \
@@ -60,7 +61,6 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/stdint.m4 $(top_srcdir)/../libtool.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
-	$(top_srcdir)/bfd.m4 $(top_srcdir)/warning.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/zlib.m4 \
 	$(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -370,6 +370,7 @@ BFD64_LIBS_CFILES = archive64.c
 # This list is alphabetized to make it easier to keep in sync
 # with the decls and initializer in archures.c.
 ALL_MACHINES = \
+	cpu-aarch64.lo \
 	cpu-alpha.lo \
 	cpu-arc.lo \
 	cpu-arm.lo \
@@ -404,6 +405,8 @@ ALL_MACHINES = \
 	cpu-m32r.lo \
 	cpu-m68hc11.lo \
 	cpu-m68hc12.lo \
+	cpu-m9s12x.lo \
+	cpu-m9s12xg.lo \
 	cpu-m68k.lo \
 	cpu-m88k.lo \
 	cpu-mcore.lo \
@@ -448,6 +451,7 @@ ALL_MACHINES = \
 	cpu-z8k.lo
 
 ALL_MACHINES_CFILES = \
+	cpu-aarch64.c \
 	cpu-alpha.c \
 	cpu-arc.c \
 	cpu-arm.c \
@@ -482,6 +486,8 @@ ALL_MACHINES_CFILES = \
 	cpu-m32r.c \
 	cpu-m68hc11.c \
 	cpu-m68hc12.c \
+	cpu-m9s12x.c \
+	cpu-m9s12xg.c \
 	cpu-m68k.c \
 	cpu-m88k.c \
 	cpu-mcore.c \
@@ -910,6 +916,7 @@ BFD32_BACKENDS_CFILES = \
 # elf32-ia64.c requires a 64-bit bfd_vma, and hence can not be put in
 # BFD32_BACKENDS.
 BFD64_BACKENDS = \
+	elf64-aarch64.lo \
 	aix5ppc-core.lo \
 	aout64.lo \
 	coff-alpha.lo \
@@ -948,6 +955,7 @@ BFD64_BACKENDS = \
 	vms-alpha.lo
 
 BFD64_BACKENDS_CFILES = \
+	elf64-aarch64.c \
 	aix5ppc-core.c \
 	aout64.c \
 	coff-alpha.c \
@@ -1266,6 +1274,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cofflink.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compress.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/corefile.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-aarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-alpha.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-arc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-arm.Plo@am__quote@
@@ -1302,6 +1311,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-m68hc12.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-m68k.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-m88k.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-m9s12x.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-m9s12xg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-mcore.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-mep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-microblaze.Plo@am__quote@
@@ -1421,6 +1432,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-xstormy16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-xtensa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf64-aarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf64-alpha.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf64-gen.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf64-hppa.Plo@am__quote@

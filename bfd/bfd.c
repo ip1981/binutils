@@ -1424,6 +1424,11 @@ DESCRIPTION
 .       BFD_SEND (abfd, _bfd_find_nearest_line, \
 .                 (abfd, sec, syms, off, file, func, line))
 .
+.#define bfd_find_nearest_line_discriminator(abfd, sec, syms, off, file, func, \
+.                                            line, disc) \
+.       BFD_SEND (abfd, _bfd_find_nearest_line_discriminator, \
+.                 (abfd, sec, syms, off, file, func, line, disc))
+.
 .#define bfd_find_line(abfd, syms, sym, file, line) \
 .       BFD_SEND (abfd, _bfd_find_line, \
 .                 (abfd, syms, sym, file, line))
@@ -1456,8 +1461,8 @@ DESCRIPTION
 .#define bfd_gc_sections(abfd, link_info) \
 .	BFD_SEND (abfd, _bfd_gc_sections, (abfd, link_info))
 .
-.#define bfd_lookup_section_flags(link_info, flag_info) \
-.	BFD_SEND (abfd, _bfd_lookup_section_flags, (link_info, flag_info))
+.#define bfd_lookup_section_flags(link_info, flag_info, section) \
+.	BFD_SEND (abfd, _bfd_lookup_section_flags, (link_info, flag_info, section))
 .
 .#define bfd_merge_sections(abfd, link_info) \
 .	BFD_SEND (abfd, _bfd_merge_sections, (abfd, link_info))

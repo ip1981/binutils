@@ -3238,7 +3238,7 @@ if test "$ac_res" != no; then :
 fi
 
 
-BFD_VERSION=`sed -n -e 's/^.._INIT_AUTOMAKE.*,[ 	]*\([^ 	]*\)[ 	]*).*/\1/p' < ${srcdir}/../bfd/configure.in`
+BFD_VERSION=`${srcdir}/../bfd/configure --version | sed -n -e '1s,.* ,,p'`
 am__api_version='1.11'
 
 # Find a good install program.  We prefer a C program (faster),
@@ -11654,6 +11654,8 @@ fi
 ac_config_headers="$ac_config_headers config.h:config.in"
 
 
+
+
 if test -z "$target" ; then
     as_fn_error "Unrecognized target system type; please check config.sub." "$LINENO" 5
 fi
@@ -12488,6 +12490,38 @@ $as_echo "$ac_cv_header_sys_wait_h" >&6; }
 if test $ac_cv_header_sys_wait_h = yes; then
 
 $as_echo "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether string.h and strings.h may both be included" >&5
+$as_echo_n "checking whether string.h and strings.h may both be included... " >&6; }
+if test "${gcc_cv_header_string+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <string.h>
+#include <strings.h>
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  gcc_cv_header_string=yes
+else
+  gcc_cv_header_string=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_string" >&5
+$as_echo "$gcc_cv_header_string" >&6; }
+if test $gcc_cv_header_string = yes; then
+
+$as_echo "#define STRING_WITH_STRINGS 1" >>confdefs.h
 
 fi
 

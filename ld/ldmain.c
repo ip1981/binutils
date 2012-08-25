@@ -89,8 +89,8 @@ int g_switch_value = 8;
 /* Nonzero means print names of input files as processed.  */
 bfd_boolean trace_files;
 
-/* Nonzero means same, but note open failures, too.  */
-bfd_boolean trace_file_tries;
+/* Nonzero means report actions taken by the linker, and describe the linker script in use.  */
+bfd_boolean verbose;
 
 /* Nonzero means version number was printed, so exit successfully
    instead of complaining if no input files are given.  */
@@ -367,7 +367,7 @@ main (int argc, char **argv)
       lex_string = NULL;
     }
 
-  if (trace_file_tries)
+  if (verbose)
     {
       if (saved_script_handle)
 	info_msg (_("using external linker script:"));
@@ -888,7 +888,7 @@ add_archive_element (struct bfd_link_info *info,
 	minfo ("(%s)\n", name);
     }
 
-  if (trace_files || trace_file_tries)
+  if (trace_files || verbose)
     info_msg ("%I\n", &orig_input);
   return TRUE;
 }
