@@ -199,6 +199,7 @@ for targ in $target $canon_targets; do
 	AM_CONDITIONAL(DEFAULT_TARGET_POWERPC, test "$targ_obj" = "powerpc")
 	AM_CONDITIONAL(DEFAULT_TARGET_SPARC, test "$targ_obj" = "sparc")
 	AM_CONDITIONAL(DEFAULT_TARGET_X86_64, test "$targ_obj" = "x86_64")
+	AM_CONDITIONAL(DEFAULT_TARGET_TILEGX, test "$targ_obj" = "tilegx")
       fi
     fi
   fi
@@ -304,7 +305,7 @@ dnl tell the unittest framework if we're compiling for one of those
 dnl targets, so it doesn't try to run the tests that do that.
 AM_CONDITIONAL(FN_PTRS_IN_SO_WITHOUT_PIC, [
   case $target_cpu in
-    i?86) true;;
+    powerpc*) false;;
     x86_64) false;;
     sparc64) false;;
     *) true;;

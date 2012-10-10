@@ -1,3 +1,127 @@
+2012-10-09  Nagajyothi Eggone  <nagajyothi.eggone@amd.com>
+
+	* i386-gen.c (cpu_flag_init): Add CPU_BDVER3_FLAGS.
+	* i386-init.h: Regenerated.
+
+2012-10-05  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* ppc-dis.c (ppc_opts) <altivec>: Use PPC_OPCODE_ALTIVEC2;
+	* ppc-opc.c (VBA): New define.
+	(powerpc_opcodes) <vcuxwfp, vcsxwfp, vcfpuxws, vcfpsxsw, vmr, vnot,
+	mfppr, mfppr32, mtppr, mtppr32>: New extended mnemonics.
+
+2012-10-04  Nick Clifton  <nickc@redhat.com>
+
+	* v850-dis.c (disassemble): Place square parentheses around second
+	register operand of clr1, not1, set1 and tst1 instructions.
+
+2012-10-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* s390-mkopc.c: Support new option zEC12.
+	* s390-opc.c: Add new instruction formats.
+	* s390-opc.txt: Add new instructions for zEC12.
+
+2012-09-27  Anthony Green  <green@moxielogic.com>
+
+	* moxie-dis.c (print_insn_moxie): Print 'bad' instructions.
+	* moxie-opc.c: All 'bad' instructions have the itype MOXIE_BAD.
+
+2012-09-25  Saravanan Ekanathan <saravanan.ekanathan@amd.com>
+
+	* i386-gen.c (cpu_flag_init): Add missing Cpu flags in
+	CPU_BDVER1_FLAGS, CPU_BDVER2_FLAGS, CPU_BTVER1_FLAGS
+	and CPU_BTVER2_FLAGS.
+	* i386-init.h: Regenerated.
+
+2012-09-20  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* i386-gen.c (cpu_flag_init): Add CpuCX16 to CPU_NOCONA_FLAGS,
+	CPU_CORE_FLAGS, CPU_CORE2_FLAGS, CPU_COREI7_FLAGS,
+	CPU_BDVER1_FLAGS, CPU_BDVER2_FLAGS, CPU_BTVER1_FLAGS,
+	CPU_BTVER2_FLAGS.  Add CPU_CX16_FLAGS.
+	(cpu_flags): Add CpuCX16.
+	* i386-opc.h (CpuCX16): New.
+	(i386_cpu_flags): Add cpucx16.
+	* i386-opc.tbl: Replace CpuSSE3 with CpuCX16 for cmpxchg16b.
+	* i386-tbl.h: Regenerate.
+	* i386-init.h: Likewise.
+
+2012-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* arm-dis.c: Changed ldra and strl-form mnemonics
+	to lda and stl-form.
+
+2012-09-18  Chao-ying Fu  <fu@mips.com>
+
+	* micromips-opc.c (micromips_opcodes): Correct the encoding of
+	the "swxc1" instruction.
+
+2012-09-17  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* aarch64-asm.c (aarch64_ins_imm_half): Remove ATTRIBUTE_UNUSED from
+	the parameter 'inst'.
+	(aarch64_ins_addr_simm): Add ATTRIBUTE_UNUSED to the parameter 'inst'.
+	(convert_mov_to_movewide): Change to assert (0) when
+	aarch64_wide_constant_p returns FALSE.
+
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerate.
+
+2012-09-14  Anthony Green  <green@moxielogic.com>
+
+	* moxie-dis.c (print_insn_moxie): Branch targets are relative to
+	the address after the branch instruction.
+
+2012-09-13  Anthony Green  <green@moxielogic.com>
+
+	* moxie-dis.c (print_insn_moxie): Handle bi-endian encodings.
+
+2012-09-10  Matthias Klose  <doko@ubuntu.com>
+
+	* config.in: Disable sanity check for kfreebsd.
+
+2012-09-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2012-09-04  Sergey A. Guriev <sergey.a.guriev@intel.com>
+
+	* ia64-asmtab.h (completer_index): Extend bitfield to full uint.
+	* ia64-gen.c: Promote completer index type to longlong.
+	(irf_operand): Add new register recognition.
+	(in_iclass_mov_x): Add an entry for the new mov_* instruction type.
+	(lookup_specifier): Add new resource recognition.
+	(insert_bit_table_ent): Relax abort condition according to the
+	changed completer index type.
+	(print_dis_table): Fix printf format for completer index.
+	* ia64-ic.tbl: Add a new instruction class.
+	* ia64-opc-i.c (ia64_opcodes_i): Define new I-instructions.
+	* ia64-opc-m.c (ia64_opcodes_m): Define new M-instructions.
+	* ia64-opc.h: Define short names for new operand types.
+	* ia64-raw.tbl: Add new RAW resource for DAHR register.
+	* ia64-waw.tbl: Add new WAW resource for DAHR register.
+	* ia64-asmtab.c: Regenerate.
+
+2012-08-29  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* ppc-opc.c (VXASHB_MASK): New define.
+	(powerpc_opcodes) <vsldoi>: Use VXASHB_MASK.
+
+2012-08-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* ppc-opc.c (UIMM4, UIMM3, UIMM2, VXVA_MASK, VXVB_MASK, VXVAVB_MASK,
+	VXVDVA_MASK, VXUIMM4_MASK, VXUIMM3_MASK, VXUIMM2_MASK): New defines.
+	(powerpc_opcodes) <vexptefp, vlogefp, vrefp, vrfim, vrfin, vrfip,
+	vrfiz, vrsqrtefp, vupkhpx, vupkhsb, vupkhsh, vupklpx, vupklsb,
+	vupklsh>: Use VXVA_MASK.
+	<vspltisb, vspltish, vspltisw>: Use VXVB_MASK.
+	<mfvscr>: Use VXVAVB_MASK.
+	<mtvscr>: Use VXVDVA_MASK.
+	<vspltb>: Use VXUIMM4_MASK.
+	<vsplth>: Use VXUIMM3_MASK.
+	<vspltw>: Use VXUIMM2_MASK.
+
 2012-08-24  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* arm-dis.c (neon_opcodes): Add 2 operand sha instructions.

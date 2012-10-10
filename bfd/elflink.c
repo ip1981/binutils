@@ -187,6 +187,7 @@ _bfd_elf_link_create_dynamic_sections (bfd *abfd, struct bfd_link_info *info)
   flagword flags;
   asection *s;
   const struct elf_backend_data *bed;
+  struct elf_link_hash_entry *h;
 
   if (! is_elf_hash_table (info->hash))
     return FALSE;
@@ -254,7 +255,9 @@ _bfd_elf_link_create_dynamic_sections (bfd *abfd, struct bfd_link_info *info)
      section.  We don't want to define it if there is no .dynamic
      section, since on some ELF platforms the start up code examines it
      to decide how to initialize the process.  */
-  if (!_bfd_elf_define_linkage_sym (abfd, info, s, "_DYNAMIC"))
+  h = _bfd_elf_define_linkage_sym (abfd, info, s, "_DYNAMIC");
+  elf_hash_table (info)->hdynamic = h;
+  if (h == NULL)
     return FALSE;
 
   if (info->emit_hash)
@@ -938,6 +941,7 @@ _bfd_elf_merge_symbol (bfd *abfd,
 		       Elf_Internal_Sym *sym,
 		       asection **psec,
 		       bfd_vma *pvalue,
+		       bfd_boolean *pold_weak,
 		       unsigned int *pold_alignment,
 		       struct elf_link_hash_entry **sym_hash,
 		       bfd_boolean *skip,
@@ -1040,6 +1044,8 @@ _bfd_elf_merge_symbol (bfd *abfd,
   newweak = bind == STB_WEAK;
   oldweak = (h->root.type == bfd_link_hash_defweak
 	     || h->root.type == bfd_link_hash_undefweak);
+  if (pold_weak)
+    *pold_weak = oldweak;
 
   /* In cases involving weak versioned symbols, we may wind up trying
      to merge a symbol with itself.  Catch that here, to avoid the
@@ -1210,23 +1216,25 @@ _bfd_elf_merge_symbol (bfd *abfd,
 	      vh->root.type = h->root.type;
 	      h->root.type = bfd_link_hash_indirect;
 	      (*bed->elf_backend_copy_indirect_symbol) (info, vh, h);
-	      /* Protected symbols will override the dynamic definition
-		 with default version.  */
-	      if (ELF_ST_VISIBILITY (sym->st_other) == STV_PROTECTED)
+
+	      h->root.u.i.link = (struct bfd_link_hash_entry *) vh;
+	      if (ELF_ST_VISIBILITY (sym->st_other) != STV_PROTECTED)
 		{
-		  h->root.u.i.link = (struct bfd_link_hash_entry *) vh;
-		  vh->dynamic_def = 1;
-		  vh->ref_dynamic = 1;
+		  /* If the new symbol is hidden or internal, completely undo
+		     any dynamic link state.  */
+		  (*bed->elf_backend_hide_symbol) (info, h, TRUE);
+		  h->forced_local = 0;
+		  h->ref_dynamic = 0;
 		}
 	      else
-		{
-		  h->root.type = vh->root.type;
-		  vh->ref_dynamic = 0;
-		  /* We have to hide it here since it was made dynamic
-		     global with extra bits when the symbol info was
-		     copied from the old dynamic definition.  */
-		  (*bed->elf_backend_hide_symbol) (info, vh, TRUE);
-		}
+		h->ref_dynamic = 1;
+
+	      h->def_dynamic = 0;
+	      h->dynamic_def = 0;
+	      /* FIXME: Should we check type and size for protected symbol?  */
+	      h->size = 0;
+	      h->type = 0;
+
 	      h = vh;
 	    }
 	  else
@@ -1660,7 +1668,7 @@ _bfd_elf_add_default_symbol (bfd *abfd,
   size_change_ok = FALSE;
   sec = *psec;
   if (!_bfd_elf_merge_symbol (abfd, info, shortname, sym, &sec, value,
-			      NULL, &hi, &skip, &override,
+			      NULL, NULL, &hi, &skip, &override,
 			      &type_change_ok, &size_change_ok))
     return FALSE;
 
@@ -1769,7 +1777,7 @@ nondefault:
   size_change_ok = FALSE;
   sec = *psec;
   if (!_bfd_elf_merge_symbol (abfd, info, shortname, sym, &sec, value,
-			      NULL, &hi, &skip, &override,
+			      NULL, NULL, &hi, &skip, &override,
 			      &type_change_ok, &size_change_ok))
     return FALSE;
 
@@ -3863,6 +3871,8 @@ error_free_dyn:
       bfd_boolean size_change_ok;
       bfd_boolean type_change_ok;
       bfd_boolean new_weakdef;
+      bfd_boolean new_weak;
+      bfd_boolean old_weak;
       bfd_boolean override;
       bfd_boolean common;
       unsigned int old_alignment;
@@ -3995,6 +4005,7 @@ error_free_dyn:
 
       size_change_ok = FALSE;
       type_change_ok = bed->type_change_ok;
+      old_weak = FALSE;
       old_alignment = 0;
       old_bfd = NULL;
       new_sec = sec;
@@ -4140,7 +4151,7 @@ error_free_dyn:
 	    }
 
 	  if (!_bfd_elf_merge_symbol (abfd, info, name, isym, &sec,
-				      &value, &old_alignment,
+				      &value, &old_weak, &old_alignment,
 				      sym_hash, &skip, &override,
 				      &type_change_ok, &size_change_ok))
 	    goto error_free_vers;
@@ -4202,10 +4213,11 @@ error_free_dyn:
       if (is_elf_hash_table (htab))
 	h->unique_global = (flags & BSF_GNU_UNIQUE) != 0;
 
+      new_weak = (flags & BSF_WEAK) != 0;
       new_weakdef = FALSE;
       if (dynamic
 	  && definition
-	  && (flags & BSF_WEAK) != 0
+	  && new_weak
 	  && !bed->is_function_type (ELF_ST_TYPE (isym->st_info))
 	  && is_elf_hash_table (htab)
 	  && h->u.weakdef == NULL)
@@ -4334,7 +4346,9 @@ error_free_dyn:
 	    h->size = h->root.u.c.size;
 
 	  if (ELF_ST_TYPE (isym->st_info) != STT_NOTYPE
-	      && (definition || h->type == STT_NOTYPE))
+	      && ((definition && !new_weak)
+		  || (old_weak && h->root.type == bfd_link_hash_common)
+		  || h->type == STT_NOTYPE))
 	    {
 	      unsigned int type = ELF_ST_TYPE (isym->st_info);
 

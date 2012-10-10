@@ -2318,7 +2318,7 @@ Layout::relaxation_loop_body(
   // compatible with putting the segment headers and file headers into
   // that segment.
   if (parameters->options().user_set_Ttext()
-      && parameters->options().Ttext() % target->common_pagesize() != 0)
+      && parameters->options().Ttext() % target->abi_pagesize() != 0)
     {
       load_seg = NULL;
       phdr_seg = NULL;
@@ -3330,7 +3330,7 @@ Layout::set_segment_offsets(const Target* target, Output_segment* load_seg,
 
 	  if (!parameters->options().nmagic()
 	      && !parameters->options().omagic())
-	    (*p)->set_minimum_p_align(common_pagesize);
+	    (*p)->set_minimum_p_align(abi_pagesize);
 
 	  if (!are_addresses_set)
 	    {
@@ -3420,6 +3420,8 @@ Layout::set_segment_offsets(const Target* target, Output_segment* load_seg,
 		  *pshndx = shndx_hold;
 		  addr = align_address(aligned_addr, common_pagesize);
 		  addr = align_address(addr, (*p)->maximum_alignment());
+		  if ((addr & (abi_pagesize - 1)) != 0)
+		    addr = addr + abi_pagesize;
 		  off = orig_off + ((addr - orig_addr) & (abi_pagesize - 1));
 		  off = align_file_offset(off, addr, abi_pagesize);
 

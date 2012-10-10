@@ -81,30 +81,25 @@ scan_relocs(
 	  unsigned int shndx = lsym.get_st_shndx();
 	  bool is_ordinary;
 	  shndx = object->adjust_sym_shndx(r_sym, shndx, &is_ordinary);
-	  if (is_ordinary
-	      && shndx != elfcpp::SHN_UNDEF
-	      && !object->is_section_included(shndx)
-              && !symtab->is_section_folded(object, shndx))
-	    {
-	      // RELOC is a relocation against a local symbol in a
-	      // section we are discarding.  We can ignore this
-	      // relocation.  It will eventually become a reloc
-	      // against the value zero.
-	      //
-	      // FIXME: We should issue a warning if this is an
-	      // allocated section; is this the best place to do it?
-	      // 
-	      // FIXME: The old GNU linker would in some cases look
-	      // for the linkonce section which caused this section to
-	      // be discarded, and, if the other section was the same
-	      // size, change the reloc to refer to the other section.
-	      // That seems risky and weird to me, and I don't know of
-	      // any case where it is actually required.
-
-	      continue;
-	    }
+	  // If RELOC is a relocation against a local symbol in a
+	  // section we are discarding then we can ignore it.  It will
+	  // eventually become a reloc against the value zero.
+	  //
+	  // FIXME: We should issue a warning if this is an
+	  // allocated section; is this the best place to do it?
+	  // 
+	  // FIXME: The old GNU linker would in some cases look
+	  // for the linkonce section which caused this section to
+	  // be discarded, and, if the other section was the same
+	  // size, change the reloc to refer to the other section.
+	  // That seems risky and weird to me, and I don't know of
+	  // any case where it is actually required.
+	  bool is_discarded = (is_ordinary
+			       && shndx != elfcpp::SHN_UNDEF
+			       && !object->is_section_included(shndx)
+			       && !symtab->is_section_folded(object, shndx));
 	  scan.local(symtab, layout, target, object, data_shndx,
-		     output_section, reloc, r_type, lsym);
+		     output_section, reloc, r_type, lsym, is_discarded);
 	}
       else
 	{
@@ -590,12 +585,12 @@ scan_relocatable_relocs(
     }
 }
 
-// Relocate relocs during a relocatable link.  This is a default
-// definition which should work for most targets.
+// Relocate relocs.  Called for a relocatable link, and for --emit-relocs.
+// This is a default definition which should work for most targets.
 
 template<int size, bool big_endian, int sh_type>
 void
-relocate_for_relocatable(
+relocate_relocs(
     const Relocate_info<size, big_endian>* relinfo,
     const unsigned char* prelocs,
     size_t reloc_count,

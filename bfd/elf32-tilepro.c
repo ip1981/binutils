@@ -1105,7 +1105,7 @@ static int
 tilepro_plt_entry_build (asection *splt, asection *sgotplt, bfd_vma offset,
 		      bfd_vma *r_offset)
 {
-  int plt_index = (offset - PLT_HEADER_SIZE) / PLT_ENTRY_SIZE;
+  int plt_index = (offset - PLT_ENTRY_SIZE) / PLT_ENTRY_SIZE;
   int got_offset = plt_index * GOT_ENTRY_SIZE + GOTPLT_HEADER_SIZE;
   tilepro_bundle_bits *pc;
 
@@ -2193,7 +2193,7 @@ allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
 	  /* Allocate room for the header.  */
 	  if (s->size == 0)
 	    {
-	      s->size = PLT_HEADER_SIZE;
+	      s->size = PLT_ENTRY_SIZE;
 	    }
 
           h->plt.offset = s->size;
@@ -3092,7 +3092,7 @@ tilepro_elf_relocate_section (bfd *output_bfd, struct bfd_link_info *info,
 		  local_got_offsets[r_symndx] |= 1;
 		}
 	    }
-	  relocation = htab->elf.sgot->output_offset + off - got_base;
+	  relocation = off - got_base;
 	  break;
 
         case R_TILEPRO_JOFFLONG_X1_PLT:
@@ -3511,7 +3511,7 @@ tilepro_elf_relocate_section (bfd *output_bfd, struct bfd_link_info *info,
 	  if (off >= (bfd_vma) -2)
 	    abort ();
 
-	  relocation = htab->elf.sgot->output_offset + off - got_base;
+	  relocation = off - got_base;
 	  unresolved_reloc = FALSE;
 	  howto = tilepro_elf_howto_table + r_type;
 	  break;
@@ -3787,7 +3787,7 @@ tilepro_elf_finish_dynamic_symbol (bfd *output_bfd,
     }
 
   /* Mark some specially defined symbols as absolute. */
-  if (strcmp (h->root.root.string, "_DYNAMIC") == 0
+  if (h == htab->elf.hdynamic
       || (h == htab->elf.hgot || h == htab->elf.hplt))
     sym->st_shndx = SHN_ABS;
 
@@ -3867,7 +3867,11 @@ tilepro_elf_finish_dynamic_sections (bfd *output_bfd,
 
       /* Fill in the first entry in the procedure linkage table.  */
       if (splt->size > 0)
-        memcpy (splt->contents, tilepro_plt0_entry, PLT_HEADER_SIZE);
+	{
+	  memcpy (splt->contents, tilepro_plt0_entry, PLT_HEADER_SIZE);
+	  memset (splt->contents + PLT_HEADER_SIZE, 0,
+		  PLT_ENTRY_SIZE - PLT_HEADER_SIZE);
+	}
 
       elf_section_data (splt->output_section)->this_hdr.sh_entsize
 	= PLT_ENTRY_SIZE;
@@ -3924,7 +3928,7 @@ static bfd_vma
 tilepro_elf_plt_sym_val (bfd_vma i, const asection *plt,
                       const arelent *rel ATTRIBUTE_UNUSED)
 {
-  return plt->vma + PLT_HEADER_SIZE + i * PLT_ENTRY_SIZE;
+  return plt->vma + (i + 1) * PLT_ENTRY_SIZE;
 }
 
 static enum elf_reloc_type_class

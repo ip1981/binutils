@@ -1,3 +1,219 @@
+2012-10-09  Nagajyothi Eggone  <nagajyothi.eggone@amd.com>
+
+	* config/tc-i386.c (cpu_arch): Add CPU_BDVER3_FLAGS.
+	* doc/c-i386.texi: Add -march=bdver3 option.
+
+2012-10-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/tc-v850.c (v850_insert_operand): Use a static buffer for
+	the error message.
+
+2012-10-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/tc-s390.c (s390_parse_cpu): Add new option zEC12.
+	* doc/as.texinfo: Document new option zEC12.
+	* doc/c-s390.texi: Likewise.
+
+2012-10-03  DJ Delorie  <dj@redhat.com>
+
+	* config/tc-rl78.c: Change line_separator to '@' so that '|' can
+	be used in expressions.
+
+2012-10-01  Alan Modra  <amodra@gmail.com>
+
+	* write.c (chain_frchains_together_1): Reorder assertion to avoid
+	uninit warning.
+
+2012-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/tc-mips.h (TC_FORCE_RELOCATION): Remove comment.
+	* config/tc-mips.c (calculate_reloc): New function.
+	(append_insn): Use it.  Do not resolve compound relocations here.
+	(mips16_macro_build, mips16_ip): Use calculate_reloc.
+	(mips16_immed_extend): New function, split out from...
+	(mips16_immed): ...here.
+	(mips_frob_file): Handle null symbols.
+	(mips_force_relocation): Remove NEWABI handling.
+	(read_reloc_insn, write_reloc_insn): New functions.
+	(md_apply_fix): Report TLS relocations against constants.
+	Use read_reloc_insn, calculate_reloc and write_reloc_insn.
+	Report relocations against constants that can't be resolved
+	at assembly time.
+
+2012-09-23  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/tc-mips.c (append_insn) <BFD_RELOC_MIPS_JMP>: Don't
+	mark as incomplete for constant expressions.
+	<BFD_RELOC_MIPS16_JMP>: Likewise.
+
+2012-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/tc-mips.h (mips_record_label): Delete.
+	(mips_add_dot_label): Declare.
+	(tc_new_dot_label): Use it.
+	* config/tc-mips.c (mips_assembling_insn): New variable.
+	(md_assemble): Call mips_mark_labels.  Set mips_assembling_insn
+	while the main part of the function is executing.
+	(mips_compressed_mark_label): New function, split out from...
+	(mips_compressed_mark_labels): ...here.
+	(append_insn): Don't call mips_mark_labels here.
+	(mips_record_label): Make local.
+	(mips_add_dot_label): New function.
+
+2012-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/tc-mips.c (SEXT_16BIT): New macro.
+	(mips16_immed): Take the reloc type as a parameter.  Do not impose
+	a signed vs. unsigned distinction on the value when a relocation
+	operator was used.
+	(mips16_macro_build, mips16_ip, md_convert_frag): Pass the reloc
+	type to mips16_immed.
+	(macro): Use SEXT_16BIT.
+
+2012-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/tc-mips.c (read_insn, write_insn, read_compressed_insn):
+	New functions.
+	(install_insn, md_apply_fix, md_convert_frag, mips_handle_align):
+	Use them, and write_compressed_insn.
+
+2012-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/tc-mips.c (mips_cl_insn): Remove use_extend and extend.
+	(MIPS16_EXTEND): New macro.
+	(mips16_opcode_length): New function.
+	(insn_length): Use it.
+	(create_insn): Update after mips_cl_insn change.
+	(write_compressed_insn): New function.
+	(install_insn): Use it.
+	(append_insn): Use insn_length to check for unextended MIPS16
+	instructions.
+	(mips16_macro_build): Update call to mips16_immed.
+	(mips16_ip): Likewise.  Use MIPS16_EXTEND to force an extended
+	instruction.
+	(mips16_immed): Remove use_extend and extend; install EXTEND
+	opcodes in the upper 16 bits of *INSN instead.  Keep the
+	instruction extended if it already is.  Replace warn, small
+	and ext with a forced_insn_length-like parameter.
+	(md_convert_frag): Update call mips16_immed.
+	Use write_compressed_insn.
+
+2012-09-20  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/tc-i386.c (cpu_arch): Add .cx16.
+	* doc/c-i386.texi: Document .cx16.
+
+2012-09-19  Steve Ellcey  <sellcey@mips.com>
+
+	* configure.tgt: Add mips*-mti-elf* target.
+
+2012-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/tc-arm.c: Changed ldra and strl-form mnemonics
+	to lda and stl-form for armv8.
+
+2012-09-17  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/tc-aarch64.c (aarch64_archs): Rename 'armv8' to 'armv8-a'.
+
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerate.
+
+2012-09-13  Anthony Green  <green@moxielogic.com>
+
+	* config/tc-moxie.h (DEFAULT_TARGET_FORMAT): Define.
+	(TARGET_FORMAT): Don't hard-code endian-ness.
+	* config/tc-moxie.c (target_big_endian, moxie_target_format):
+	Define.
+	(md_assemble): Handle bi-endian encodings.
+	(md_shortopts, md_parse_option, md_show_usage, md_apply_fix)
+	(md_number_to_chars, md_chars_to_number): Update for bi-endian
+	support.
+
+2012-09-12  Chris Schlumberger-Socha  <chris.schlumberger-socha@arm.com>
+
+	* config/tc-aarch64.c
+	(reloc_table): Add reloc to table entry.
+	(parse_address_main): Add support for #:<reloc_op>:<symbol>.
+	(parse_operands): Check for unused reloc.
+	(md_apply_fix): New case for reloc.
+	(aarch64_force_relocation): Likewise.
+
+2012-09-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR gas/13503
+	* config/tc-avr.h (TC_VALIDATE_FIX): Skip: BFD_RELOC_AVR_8_LO,
+	BFD_RELOC_AVR_8_HI, BFD_RELOC_AVR_8_HLO.
+
+2012-09-11  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.am (bootstrap): Add $EXEEXT to dependency.
+	* Makefile.in: Regenerate.
+
+2012-09-10  Matthias Klose  <doko@ubuntu.com>
+
+	* config.in: Disable sanity check for kfreebsd.
+
+2012-09-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2012-09-07  Anthony Green  <green@moxielogic.com>
+
+	* config/tc-moxie.c (md_pcrel_from): Branches are now relative
+	to the address following the branch instruction.
+
+2012-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/tc-s390.c (set_highgprs_p): New variable.
+	(s390_machinemode): New function.
+	(md_pseudo_table): Add new pseudo command machinemode.
+	(md_parse_option): Set set_highgprs_p to TRUE if -mzarch was
+	specified on command line.
+	(s390_elf_final_processing): Set the highgprs flag in the ELF
+	header depending on set_highgprs_p.
+
+	* doc/c-s390.texi: Document new pseudo machinemode.
+
+2012-09-05  James Lemke  <jwlemke@codesourcery.com>
+
+	* doc/c-ppc.texi: Document -mvle.
+	* doc/as.texinfo: Likewise.
+
+2012-09-04  Sergey A. Guriev  <sergey.a.guriev@intel.com>
+
+	* config/tc-ia64.c (reg_symbol): Add a new register.
+	(indirect_reg): Ditto.
+	(pseudo_func): Add new symbolic constants.
+	(operand_match): Add new operand types recognition.
+	(operand_insn): Add new register recognition.
+	(md_begin): Add new register definition.
+	(specify_resource): Add new register recognition.
+
+2012-09-01  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR gas/14521
+	* config/tc-mmix.h (tc_frob_file_before_fix): Renumber sections
+	after call to mmix_frob_file.
+
+2012-08-31  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* doc/c-mips.texi (MIPS Opts): Correct a typo in the -mips5
+	option.
+
+2012-08-27  Walter Lee  <walt@tilera.com>
+
+	* tc-tilegx.c (O_hw0_plt): Define operator.
+	(O_hw1_plt): Ditto.
+	(O_hw1_last_plt): Ditto.
+	(O_hw2_last_plt): Ditto.
+	(md_begin): Handle new operators.
+	(emit_tilegx_instruction): Ditto.
+	(md_apply_fix): Ditto.
+	* doc/c-tilegx.texi: Document new operators.
+
 2012-08-24  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/tc-arm.c (ARM_ENC_TAB): Add sha1h and sha2op entries.

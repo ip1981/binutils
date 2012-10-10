@@ -2286,20 +2286,20 @@ class Target_arm : public Sized_target<32, big_endian>
 			  const unsigned char* plocal_symbols,
 			  Relocatable_relocs*);
 
-  // Relocate a section during a relocatable link.
+  // Emit relocations for a section.
   void
-  relocate_for_relocatable(const Relocate_info<32, big_endian>*,
-			   unsigned int sh_type,
-			   const unsigned char* prelocs,
-			   size_t reloc_count,
-			   Output_section* output_section,
-			   off_t offset_in_output_section,
-			   const Relocatable_relocs*,
-			   unsigned char* view,
-			   Arm_address view_address,
-			   section_size_type view_size,
-			   unsigned char* reloc_view,
-			   section_size_type reloc_view_size);
+  relocate_relocs(const Relocate_info<32, big_endian>*,
+		  unsigned int sh_type,
+		  const unsigned char* prelocs,
+		  size_t reloc_count,
+		  Output_section* output_section,
+		  off_t offset_in_output_section,
+		  const Relocatable_relocs*,
+		  unsigned char* view,
+		  Arm_address view_address,
+		  section_size_type view_size,
+		  unsigned char* reloc_view,
+		  section_size_type reloc_view_size);
 
   // Perform target-specific processing in a relocatable link.  This is
   // only used if we use the relocation strategy RELOC_SPECIAL.
@@ -2551,7 +2551,8 @@ class Target_arm : public Sized_target<32, big_endian>
 	  unsigned int data_shndx,
 	  Output_section* output_section,
 	  const elfcpp::Rel<32, big_endian>& reloc, unsigned int r_type,
-	  const elfcpp::Sym<32, big_endian>& lsym);
+	  const elfcpp::Sym<32, big_endian>& lsym,
+	  bool is_discarded);
 
     inline void
     global(Symbol_table* symtab, Layout* layout, Target_arm* target,
@@ -7857,8 +7858,12 @@ Target_arm<big_endian>::Scan::local(Symbol_table* symtab,
 				    Output_section* output_section,
 				    const elfcpp::Rel<32, big_endian>& reloc,
 				    unsigned int r_type,
-				    const elfcpp::Sym<32, big_endian>& lsym)
+				    const elfcpp::Sym<32, big_endian>& lsym,
+				    bool is_discarded)
 {
+  if (is_discarded)
+    return;
+
   r_type = get_real_reloc_type(r_type);
   switch (r_type)
     {
@@ -8068,7 +8073,7 @@ Target_arm<big_endian>::Scan::local(Symbol_table* symtab,
 		  got->add_local_pair_with_rel(object, r_sym, shndx,
 					       GOT_TYPE_TLS_PAIR,
 					       target->rel_dyn_section(layout),
-					       elfcpp::R_ARM_TLS_DTPMOD32, 0);
+					       elfcpp::R_ARM_TLS_DTPMOD32);
 		else
 		  got->add_tls_gd32_with_static_reloc(GOT_TYPE_TLS_PAIR,
 						      object, r_sym);
@@ -9588,11 +9593,11 @@ Target_arm<big_endian>::scan_relocatable_relocs(
     rr);
 }
 
-// Relocate a section during a relocatable link.
+// Emit relocations for a section.
 
 template<bool big_endian>
 void
-Target_arm<big_endian>::relocate_for_relocatable(
+Target_arm<big_endian>::relocate_relocs(
     const Relocate_info<32, big_endian>* relinfo,
     unsigned int sh_type,
     const unsigned char* prelocs,
@@ -9608,7 +9613,7 @@ Target_arm<big_endian>::relocate_for_relocatable(
 {
   gold_assert(sh_type == elfcpp::SHT_REL);
 
-  gold::relocate_for_relocatable<32, big_endian, elfcpp::SHT_REL>(
+  gold::relocate_relocs<32, big_endian, elfcpp::SHT_REL>(
     relinfo,
     prelocs,
     reloc_count,

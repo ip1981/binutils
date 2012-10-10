@@ -1,3 +1,247 @@
+2012-10-08  Alan Modra  <amodra@gmail.com>
+
+	PR binutils/14662
+	* elf.c (_bfd_elf_make_section_from_shdr): Treat .gdb_index as
+	SEC_DEBUGGING.
+
+2012-09-20  Walter Lee  <walt@tilera.com>
+
+	* elf32-tilepro.c (tilepro_elf_relocate_section): Adjust got
+	relocations with value of hgot.
+	* elfxx-tilegx.c (tilegx_elf_relocate_section): Ditto.
+
+2012-09-19  Steve Ellcey  <sellcey@mips.com>
+
+	* config.bfd: Add mips*-mti-elf* target.
+
+2012-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ld/14591
+	* elf-bfd.h (_bfd_elf_merge_symbol): Add an argument to return
+	if the old symbol is weak.
+
+	* elf32-sh-symbian.c (sh_symbian_relocate_section): Update
+	_bfd_elf_merge_symbol call.
+
+	* elflink.c (_bfd_elf_merge_symbol): Add an argument to return
+	if the old symbol is weak.
+	(_bfd_elf_add_default_symbol): Update _bfd_elf_merge_symbol
+	call.
+	(elf_link_add_object_symbols): Don't update symbol type from a
+	weak definition.  Update symbol type from a common symbol when
+	overriding a weak symbol.
+
+2012-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* elf32-i386.c (elf_i386_convert_mov_to_lea): Ignore discarded
+	section.
+	* elf64-x86-64.c (elf_x86_64_convert_mov_to_lea): Likewise.
+
+2012-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* elf32-i386.c (elf_i386_finish_dynamic_symbol): Replace return
+	FALSE with abort.
+	* elf64-x86-64.c (elf_x86_64_finish_dynamic_symbol): Likewise.
+
+2012-09-17  Walter Lee  <walt@tilera.com>
+
+	* elf32-tilepro.c (tilepro_elf_relocate_section): Remove unused
+	got_base variable.
+	* elfxx-tilegx.c (tilegx_elf_relocate_section): Ditto.
+
+2012-09-17  Walter Lee  <walt@tilera.com>
+
+	* elf32-tilepro.c (tilepro_elf_relocate_section): Fix computation
+	of got relocations for when .got.plt section is merged with .got.
+	* elfxx-tilegx.c (tilegx_elf_relocate_section): Ditto.
+
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerate.
+
+2012-09-13  Anthony Green  <green@moxielogic.com>
+
+	* targets.c (bfd_elf32_bigmoxie_vec, bfd_elf32_littlemoxie_vec):
+	Define.
+	(bfd_elf32_moxie_vec): Remove.
+	* config.bfd, configure.in: Add bi-endian support for moxie.
+	* configure: Rebuilt.
+	* elf32-moxie.c (TARGET_LITTLE_NAME, TARGET_LITTLE_SYM): Define.
+	(TARGET_BIG_NAME, TARGET_BIG_SYM): Update for bi-endian support.
+
+2012-09-12  Doug Kwan  <dougkwan@google.com>
+
+	* elf64-ppc.c (ppc64_elf_relocate_section): Use pre-adjusted
+	relocation for stub lookup.
+
+2012-09-12  Chris Schlumberger-Socha  <chris.schlumberger-socha@arm.com>
+
+	* bfd-in2.h: Regenerated.
+	* elf64-aarch64.c
+	(elf64_aarch64_howto_table): Add R_AARCH64_GOT_LD_PREL19 reloc to HOWTO.
+	(elf64_aarch64_reloc_map): Add reloc entry.
+	(aarch64_resolve_relocation): Likewise.
+	(bfd_elf_aarch64_put_addend): Likewise.
+	(aarch64_reloc_got_type): Likewise.
+	(elf64_aarch64_final_link_relocate): Likewise.
+	(lf64_aarch64_check_relocs): Likewise.
+	(elf64_aarch64_check_relocs): New case for R_AARCH64_ADR_PREL_LO21
+	reloc.
+	* libbfd.h: Regenerated.
+	* reloc.c (R_AARCH64_GOT_LD_PREL19): New reloc.
+
+2012-09-10  Matthias Klose  <doko@ubuntu.com>
+
+	* config.in: Disable sanity check for kfreebsd.
+
+2012-09-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2012-09-04  Sergey A. Guriev <sergey.a.guriev@intel.com>
+
+	* cpu-ia64-opc.c (ins_cnt6a): New function.
+	(ext_cnt6a): Ditto.
+	(ins_strd5b): Ditto.
+	(ext_strd5b): Ditto.
+	(elf64_ia64_operands): Add new operand types.
+
+2012-09-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR binutils/14493
+	* elf.c (ignore_section_sym): Also ignore section symbols without
+	a BFD section.
+
+2012-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* elf32-s390.c (elf_s390_relocate_section): Handle PLTOFF for
+	local and global ifunc symbols.
+	* elf64-s390.c (elf_s390_relocate_section): Likewise.
+
+2012-09-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* elf-bfd.h (elf_link_hash_table): Add hdynamic for the
+	_DYNAMIC symbol.
+
+	* elflink.c (_bfd_elf_link_create_dynamic_sections): Set
+	hdynamic.
+
+	* elf-m10300.c (_bfd_mn10300_elf_finish_dynamic_symbol): Check
+	hdynamic instead of "_DYNAMIC".
+	* elf32-arm.c (elf32_arm_finish_dynamic_symbol): Likewise.
+	* elf32-cr16.c (elf32_arm_finish_dynamic_symbol): Likewise.
+	* elf32-cris.c (elf_cris_finish_dynamic_symbol): Likewise.
+	* elf32-hppa.c (elf32_hppa_finish_dynamic_symbol): Likewise.
+	* elf32-i386.c (elf_i386_convert_mov_to_lea): Likewise.
+	* elf32-lm32.c (lm32_elf_finish_dynamic_symbol): Likewise.
+	* elf32-m32r.c (m32r_elf_finish_dynamic_symbol): Likewise.
+	* elf32-s390.c (elf_s390_finish_dynamic_symbol): Likewise.
+	* elf32-sh.c (sh_elf_finish_dynamic_symbol): Likewise.
+	* elf32-tic6x.c (elf32_tic6x_finish_dynamic_symbol): Likewise.
+	* elf32-tilepro.c (tilepro_elf_finish_dynamic_symbol): Likewise.
+	* elf32-vax.c (elf_vax_finish_dynamic_symbol): Likewise.
+	* elf32-xtensa.c (elf_xtensa_finish_dynamic_symbol): Likewise.
+	* elf64-aarch64.c elf64_aarch64_finish_dynamic_symbol(): Likewise.
+	* elf64-alpha.c (elf64_alpha_finish_dynamic_symbol): Likewise.
+	* elf64-ia64-vms.c (elf64_ia64_finish_dynamic_symbol): Likewise.
+	* elf64-s390.c (elf_s390_finish_dynamic_symbol): Likewise.
+	* elf64-sh64.c (sh64_elf64_finish_dynamic_symbol): Likewise.
+	* elf64-x86-64.c (elf_x86_64_convert_mov_to_lea): Likewise.
+	* elfnn-ia64.c (elfNN_ia64_finish_dynamic_symbol): Likewise.
+	* elfxx-mips.c (_bfd_mips_elf_finish_dynamic_symbol): Likewise.
+	* elfxx-sparc.c (_bfd_sparc_elf_finish_dynamic_symbol): Likewise.
+	* elfxx-tilegx.c (tilegx_elf_finish_dynamic_symbol): Likewise.
+
+	* elf32-microblaze.c (microblaze_elf_finish_dynamic_symbol): Check
+	hdynamic, hgot, hplt instead of _DYNAMIC, _GLOBAL_OFFSET_TABLE_,
+	_PROCEDURE_LINKAGE_TABLE_.
+	* elf32-score.c (s3_bfd_score_elf_finish_dynamic_symbol): Likewise.
+	* elf32-score7.c (s7_bfd_score_elf_finish_dynamic_symbol): Likewise.
+
+2012-08-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* elf32-i386.c (elf_i386_convert_mov_to_lea): Don't optimize
+	_DYNAMIC.
+	* elf64-x86-64.c (elf_x86_64_convert_mov_to_lea): Likewise.
+
+2012-08-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* elf32-i386.c (elf_i386_convert_mov_to_lea): New.
+	(elf_i386_size_dynamic_sections): Use it on input sections.
+	(elf_i386_relocate_section): Don't convert
+	"mov foo@GOT(%reg), %reg" to "lea foo@GOTOFF(%reg), %reg"
+	for local symbols here.
+
+	* elf64-x86-64.c (elf_x86_64_convert_mov_to_lea): New.
+	(elf_x86_64_size_dynamic_sections): Use it on input sections.
+	(elf_x86_64_relocate_section): Don't convert
+	"mov foo@GOTPCREL(%rip), %reg" to "lea foo(%rip), %reg"
+	for local symbols here.
+
+2012-08-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* elf32-i386.c (elf_i386_relocate_section): Convert
+	"mov foo@GOT(%reg), %reg" to "lea foo@GOTOFF(%reg), %reg"
+	for local symbols.
+
+	* elf64-x86-64.c (elf_x86_64_relocate_section): Convert
+	"mov foo@GOTPCREL(%rip), %reg" to "lea foo(%rip), %reg"
+	for local symbols.
+
+2012-08-31  Alan Modra  <amodra@gmail.com>
+
+	PR ld/14464
+	* elf64-ppc.c (ppc64_elf_relocate_section): Map symbols defined
+	by a linker script in .opd to corresponding input .opd section.
+
+2012-08-28  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* elf32-ppc.c (ppc_elf_relocate_section): Assert that dynindx is
+	not minus one.
+	* elf64-ppc.c (ppc64_elf_relocate_section): Likewise.
+
+2012-08-28  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* elflink.c (_bfd_elf_merge_symbol): Also override the version
+	a dynamic symbol defaulted to if preempted with a hidden or
+	internal definition.
+
+2012-08-28  Walter Lee  <walt@tilera.com>
+
+	* elf32-tilepro.c (allocate_dynrelocs): Use PLT_ENTRY_SIZE as size
+	of header.
+	(tilepro_plt_entry_build): Account for new header size.
+	(tilepro_elf_finish_dynamic_sections): Ditto.
+	(tilepro_elf_plt_sym_val): Ditto.
+	* elfxx-tilegx.c (allocate_dynrelocs): Use PLT_ENTRY_SIZE as size
+	of header + tail.
+	(tilegx_elf_finish_dynamic_sections): Account for new padding.
+
+2012-08-27  Walter Lee  <walt@tilera.com>
+
+	* reloc.c (Add BFD_RELOC_TILEGX_IMM16_X0_HW0_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X1_HW0_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X0_HW1_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X1_HW1_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X0_HW2_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X1_HW2_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X0_HW3_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X1_HW3_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X0_HW0_LAST_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X1_HW0_LAST_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X0_HW1_LAST_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X1_HW1_LAST_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X0_HW2_LAST_PLT_PCREL,
+	BFD_RELOC_TILEGX_IMM16_X1_HW2_LAST_PLT_PCREL): new relocations.
+	* elfxx-tilegx.c (tilegx_elf_howto_table): Handle new relocations.
+	(tilegx_reloc_map): Ditto.
+	(reloc_to_create_func): Ditto.
+	(tilegx_elf_check_relocs): Ditto.
+	(tilegx_elf_gc_sweep_hook): Ditto.
+	(tilegx_elf_relocate_section): Ditto.
+	* libbfd.h: Regenerate.
+	* bfd-in2.h: Regenerate.
+
 2012-08-24  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* elf32-arm.c (v8): New array.

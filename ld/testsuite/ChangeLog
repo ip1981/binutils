@@ -1,3 +1,162 @@
+2012-10-08  Joe Seymour  <jseymour@codesourcery.com>
+
+	* ld-scripts/sane1.d: Sort output from nm. Allow for other symbols in
+	output.
+
+2012-09-19  Chris Schlumberger-Socha  <chris.schlumberger-socha@arm.com>
+
+	* ld-aarch64/emit-relocs-309-low.d: Replace symbol with regexp.
+	* ld-aarch64/emit-relocs-309-up.d: Likewise.
+
+2012-09-19  Andrew Burgess  <aburgess@broadcom.com>
+
+	* ld-scripts/assign-loc.d: New file.  Test for assigning absolute
+	symbol to location counter.
+	* ld-scripts/assign-loc.t: New file.  Linker script for above test.
+	* ld-scripts/expr.exp: Add new assignment test.
+
+2012-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ld/14591
+	* ld-elf/comm-data.exp (run_ld_link_tests): Add comm-data3a and
+	comm-data3b tests.
+
+	* ld-ifunc/ifunc.exp (run_ld_link_exec_tests): New.
+
+	* ld-elf/comm-data3.sd: New file.
+	* ld-elf/comm-data3a.s: Likewise.
+	* ld-elf/comm-data3b.s: Likewise.
+	* ld-ifunc/ifunc-17a-i386.d: Likewise.
+	* ld-ifunc/ifunc-17a-x86-64.d: Likewise.
+	* ld-ifunc/ifunc-17a.s: Likewise.
+	* ld-ifunc/ifunc-17b-i386.d: Likewise.
+	* ld-ifunc/ifunc-17b-x86-64.d: Likewise.
+	* ld-ifunc/ifunc-17b.s: Likewise.
+	* ld-ifunc/ifunc-common-1.out: Likewise.
+	* ld-ifunc/ifunc-common-1a.c: Likewise.
+	* ld-ifunc/ifunc-common-1b.c: Likewise.
+
+2012-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ld-elf/shared.exp (build_cxx_tests): Move out the commented out
+	test.
+
+	* lib/ld-lib.exp (run_ld_link_exec_tests): Assemble all sources
+	files in each test.
+
+2012-09-12  Chris Schlumberger-Socha  <chris.schlumberger-socha@arm.com>
+
+	* ld-aarch64/aarch64-elf.exp: New reloc tests.
+	* ld-aarch64/emit-relocs-309-low-bad.d: New file. Expected asm for test
+	failure (lower bound overflow).
+	* ld-aarch64/emit-relocs-309-low.d: New file. Expected asm for test
+	success (lower bound).
+	* ld-aarch64/emit-relocs-309-up-bad.d: New file. Expected asm for test
+	failure (upper bound overflow).
+	* ld-aarch64/emit-relocs-309-up.d: New file. Expected asm for test
+	success (upper bound).
+	* ld-aarch64/emit-relocs-309.s: New file. Asm for new reloc tests.
+
+2012-09-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* ld-mmix/sec-1.d, ld-mmix/sec-3.d: Force end-of-section symbols
+	to be emitted and checked.
+	* ld-mmix/data-1.s, ld-mmix/orph-.d, ld-mmix/orph-awp.d,
+	ld-mmix/orph-d-a.d, ld-mmix/orph-d-awn.d, ld-mmix/orph-d-awp.d,
+	ld-mmix/orph-d-awpe.d, ld-mmix/orph-d.d, ld-mmix/orph-dc-ap.d,
+	ld-mmix/orph-dc-awp.d, ld-mmix/orph-dc.d, ld-mmix/tm-ae.s,
+	ld-mmix/tm-ape.s, ld-mmix/tm-awne.s, ld-mmix/tm-awpe.s,
+	ld-mmix/tm-d-ap.s, ld-mmix/tm-d-awp.s, ld-mmix/tm-d.s,
+	ld-mmix/tm-e.s, ld-mmix/tm-orph1.s: New test files.
+
+2012-08-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ld-i386/i386.exp: Run mov1a, mov1b.
+	* ld-x86-64/x86-64.exp: Run mov1a, mov1b, mov1c, mov1d.
+
+	* ld-i386/mov1.s: New file.
+	* ld-i386/mov1a.d: Likewise.
+	* ld-i386/mov1b.d: Likewise.
+	* ld-x86-64/mov1.s: Likewise.
+	* ld-x86-64/mov1a.d: Likewise.
+	* ld-x86-64/mov1b.d: Likewise.
+	* ld-x86-64/mov1c.d: Likewise.
+	* ld-x86-64/mov1d.d: Likewise.
+
+2012-08-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ld-i386/i386.exp: Run lea1d, lea1f, lea1f.
+	* ld-x86-64/x86-64.exp: Run lea1g, lea1h, lea1i, lea1j, lea1k,
+	lea1l.
+
+	* ld-ifunc/ifunc-13-i386.d: Remove R_386_RELATIVE entry.
+
+	* ld-i386/lea1d.d: New file.
+	* ld-i386/lea1e.d: Likewise.
+	* ld-i386/lea1f.d: Likewise.
+	* ld-x86-64/lea1g.d: Likewise.
+	* ld-x86-64/lea1h.d: Likewise.
+	* ld-x86-64/lea1i.d: Likewise.
+	* ld-x86-64/lea1j.d: Likewise.
+	* ld-x86-64/lea1k.d: Likewise.
+	* ld-x86-64/lea1l.d: Likewise.
+
+2012-08-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ld-i386/i386.exp: Run lea1a, lea1b, lea1c.
+	* ld-x86-64/x86-64.exp: Run lea1a, lea1b, lea1c, lea1d, lea1e,
+	lea1f.
+
+	* ld-i386/lea1.s: New file.
+	* ld-i386/lea1a.d: Likewise.
+	* ld-i386/lea1b.d: Likewise.
+	* ld-i386/lea1c.d: Likewise.
+	* ld-x86-64/lea1.s: Likewise.
+	* ld-x86-64/lea1a.d: Likewise.
+	* ld-x86-64/lea1b.d: Likewise.
+	* ld-x86-64/lea1c.d: Likewise.
+	* ld-x86-64/lea1d.d: Likewise.
+	* ld-x86-64/lea1e.d: Likewise.
+	* ld-x86-64/lea1f.d: Likewise.
+
+2012-08-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ld/14525
+	* ld-elf/elf.exp: Run pr14525.
+
+	* ld-elf/pr14525.c: New.
+	* ld-elf/pr14525.out: Likewise.
+
+2012-08-28  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* ld-elf/export-class.sd: New test.
+	* ld-elf/export-class.vd: New test.
+	* ld-elf/export-class-def.s: New test source.
+	* ld-elf/export-class-dep.s: New test source.
+	* ld-elf/export-class-lib.s: New test source.
+	* ld-elf/export-class-ref.s: New test source.
+	* ld-elf/export-class-lib.ver: New test version script.
+	* ld-elf/export-class.exp: New test script.
+	* ld-arm/arm-export-class.rd: New test.
+	* ld-arm/arm-export-class.xd: New test.
+	* ld-arm/export-class.exp: New test script.
+	* ld-i386/i386-export-class.rd: New test.
+	* ld-i386/i386-export-class.xd: New test.
+	* ld-i386/export-class.exp: New test script.
+	* ld-mips-elf/mips-32-export-class.rd: New test.
+	* ld-mips-elf/mips-32-export-class.xd: New test.
+	* ld-mips-elf/mips-64-export-class.rd: New test.
+	* ld-mips-elf/mips-64-export-class.xd: New test.
+	* ld-mips-elf/export-class.exp: New test script.
+	* ld-powerpc/powerpc-32-export-class.rd: New test.
+	* ld-powerpc/powerpc-32-export-class.xd: New test.
+	* ld-powerpc/powerpc-64-export-class.rd: New test.
+	* ld-powerpc/powerpc-64-export-class.xd: New test.
+	* ld-powerpc/export-class.exp: New test script.
+	* ld-x86-64/x86-64-64-export-class.rd: New test.
+	* ld-x86-64/x86-64-x32-export-class.rd: New test.
+	* ld-x86-64/export-class.exp: New test script.
+
 2012-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* ld-elf/exclude3a.d: Remove target and use failif.
@@ -51,15 +210,15 @@
 	* ld-mips-elf/mips-elf.exp: Run the new tests.
 
 2012-08-13  Ian Bolton  <ian.bolton@arm.com>
-            Laurent Desnogues  <laurent.desnogues@arm.com>
-            Jim MacArthur  <jim.macarthur@arm.com>
-            Marcus Shawcroft  <marcus.shawcroft@arm.com>
-            Nigel Stephens  <nigel.stephens@arm.com>
-            Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-            Richard Earnshaw  <rearnsha@arm.com>
-            Sofiane Naci  <sofiane.naci@arm.com>
-            Tejas Belagod  <tejas.belagod@arm.com>
-            Yufeng Zhang  <yufeng.zhang@arm.com>
+	    Laurent Desnogues  <laurent.desnogues@arm.com>
+	    Jim MacArthur  <jim.macarthur@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Nigel Stephens  <nigel.stephens@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+	    Sofiane Naci  <sofiane.naci@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* ld-aarch64/aarch64-elf.exp: New file.
 	* ld-aarch64/aarch64.ld: New file.

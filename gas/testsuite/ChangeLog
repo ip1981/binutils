@@ -1,3 +1,151 @@
+2012-10-09  Nagajyothi Eggone  <nagajyothi.eggone@amd.com>
+
+	* gas/i386/i386.exp: Run bdver3 test cases.
+	* gas/i386/nops-1-bdver3.d: New.
+	* gas/i386/arch-10-bdver3.d: New.
+	* gas/i386/x86-64-nops-1-bdver3.d: New.
+	* gas/i386/x86-64-arch-2-bdver3.d: New.
+
+2012-10-05  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gas/ppc/power7.d: Add tests for mfppr, mfppr32, mtppr and mtppr32.
+	* gas/ppc/power7.s: Likewise.
+	* gas/ppc/altivec.d: Add tests for all legacy Altivec instructions.
+	* gas/ppc/altivec.s: Likewise.
+	* gas/ppc/altivec2.d: New test file.
+	* gas/ppc/altivec2.s: Likewise.
+	* gas/ppc/ppc.exp: Run it.
+
+2012-10-04  Nick Clifton  <nickc@redhat.com>
+
+	* gas/v850/v850e1.d: Fix expected disassembly of clr1, not1, set1
+	and tst1 insns.
+
+2012-10-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gas/s390/zarch-zEC12.d: Fix branch preload instructions.
+	* gas/s390/zarch-zEC12.s: Likewise.
+
+2012-10-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gas/s390/s390.exp: Run zEC12 tests.
+	* gas/s390/zarch-zEC12.d: New file.
+	* gas/s390/zarch-zEC12.s: New file.
+
+2012-09-25  Saravanan Ekanathan <saravanan.ekanathan@amd.com>
+
+	* gas/i386/arch-10-bdver1.d: New file to test bdver1 core.
+	* gas/i386/x86-64-arch-2-bdver1.d: Likewise.
+	* gas/i386/i386.exp: Run bdver1 testcases.
+	* gas/i386/arch-10-bdver2.d: Updated -march flags.
+	* gas/i386/arch-10-btver1.d: Likewise.
+	* gas/i386/arch-10-btver2.d: Likewise.
+	* gas/i386/x86-64-arch-2-bdver2.d: Likewise.
+	* gas/i386/x86-64-arch-2-btver1.d: Likewise.
+	* gas/i386/x86-64-arch-2-btver2.d: Likewise.
+
+2012-09-23  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gas/mips/hilo-diff-eb.d: New test.
+	* gas/mips/hilo-diff-eb-n32.d: New test.
+	* gas/mips/hilo-diff-eb-n64.d: New test.
+	* gas/mips/hilo-diff-el.d: New test.
+	* gas/mips/hilo-diff-el-n32.d: New test.
+	* gas/mips/hilo-diff-el-n64.d: New test.
+	* gas/mips/mips16@hilo-diff-eb.d: New test.
+	* gas/mips/mips16@hilo-diff-eb-n32.d: New test.
+	* gas/mips/mips16@hilo-diff-eb-n64.d: New test.
+	* gas/mips/mips16@hilo-diff-el.d: New test.
+	* gas/mips/mips16@hilo-diff-el-n32.d: New test.
+	* gas/mips/mips16@hilo-diff-el-n64.d: New test.
+	* gas/mips/micromips@hilo-diff-eb.d: New test.
+	* gas/mips/micromips@hilo-diff-eb-n32.d: New test.
+	* gas/mips/micromips@hilo-diff-eb-n64.d: New test.
+	* gas/mips/micromips@hilo-diff-el.d: New test.
+	* gas/mips/micromips@hilo-diff-el-n32.d: New test.
+	* gas/mips/micromips@hilo-diff-el-n64.d: New test.
+	* gas/mips/hilo-diff.s: New test source.
+	* gas/mips/mips.exp: Run the new tests.
+
+2012-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gas/mips/elf-rel22.s, gas/mips/elf-rel22.d: Add more tests.
+	* gas/mips/elf-rel29.s, gas/mips/elf-rel29.d,
+	gas/mips/micromips@elf-rel29.d, gas/mips/elf-rel30.s,
+	gas/mips/elf-rel30.l: New tests.
+	* gas/mips/mips.exp: Run them.
+
+2012-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gas/mips/dot-1.s, gas/mips/dot-1.d, gas/mips/micromips@dot-1.d,
+	gas/mips/mips16@dot-1.d: New test.
+	* gas/mips/mips.exp: Run it.
+
+2012-09-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gas/i386/i386.exp: Run x86-64-arch-2-1 and x86-64-arch-2-2.
+
+	* gas/i386/x86-64-arch-2-1.l: New file.
+	* gas/i386/x86-64-arch-2-1.s: Likewise.
+	* gas/i386/x86-64-arch-2-2.l: Likewise.
+	* gas/i386/x86-64-arch-2-2.s: Likewise.
+
+2012-09-20  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gas/i386/x86-64-arch-2.s: Add test for cmpxchg16b.
+	* gas/i386/x86-64-arch-2.d: Update correspondingly.
+	* gas/i386/x86-64-arch-2-bdver2.d: Likewise.
+	* gas/i386/x86-64-arch-2-btver1.d: Likewise.
+	* gas/i386/x86-64-arch-2-btver2.d: Likewise.
+	* gas/i386/x86-64-arch-2-lzcnt.d: Likewise.
+	* gas/i386/x86-64-arch-2-prefetchw.d: Likewise.
+	* gas/i386/ilp32/x86-64-arch-2.d: Likewise.
+
+2012-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gas/arm/armv8-a-bad.l: Updated for changed mnemonics.
+	* gas/arm/armv8-a-bad.s: Likewise.
+	* gas/arm/armv8-a.d: Likewise.
+	* gas/arm/armv8-a.s: Likewise.
+	* gas/arm/inst.s: Added test for ldrt encoding compatibly with ldralt.
+	* gas/arm/inst.d: Updated.
+
+2012-09-18  Chao-ying Fu  <fu@mips.com>
+
+	* gas/mips/micromips.d: Correct the disassembly of SWXC1.
+	* gas/mips/micromips-trap.d: Likewise.
+	* gas/mips/micromips@24k-triple-stores-1.d: Likewise.
+	* gas/mips/micromips@mips4-fp.d: Likewise.
+
+2012-09-17  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gas/aarch64/crypto.d (#as): Update for v8->v8-A change.
+	* gas/aarch64/int-insns.d (#as): Likewise.
+	* gas/aarch64/legacy_reg_names.s (.arch): Likewise.
+	* gas/aarch64/neon-not.s (.arch): Likewise.
+	* gas/aarch64/neon-vfp-reglist-post.s (.arch): Likewise.
+	* gas/aarch64/neon-vfp-reglist.s (.arch): Likewise.
+
+2012-09-12  Chris Schlumberger-Socha  <chris.schlumberger-socha@arm.com>
+
+	* gas/aarch64/reloc-insn.d
+	(BFD_RELOC_AARCH64_GOT_LD_PREL19): Add expected asm for new reloc test.
+	* gas/aarch64/reloc-insn.s
+	(BFD_RELOC_AARCH64_GOT_LD_PREL19): Add test for reloc.
+
+2012-09-04  Sergey A. Guriev  <sergey.a.guriev@intel.com>
+
+	* gas/testsuite/gas/ia64/psn.d: New file.
+	* gas/testsuite/gas/ia64/psn.s: New file.
+	* gas/testsuite/gas/ia64/ia64.exp: Add new testcase.
+	* gas/testsuite/gas/ia64/opc-i.d: Fixed failing tests.
+	* gas/testsuite/gas/ia64/opc-m.d: Ditto.
+
+2012-09-01  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR gas/14521
+	* gas/mmix/group-1.d, gas/mmix/group-1.s: New test.
+
 2012-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gas/elf/group0c.d: Skip Solaris.
