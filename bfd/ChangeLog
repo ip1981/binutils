@@ -1,3 +1,184 @@
+2012-10-26  Nick Clifton  <nickc@redhat.com>
+
+	* po/uk.po: Updated Ukranian translation.
+
+2012-10-26  Alan Modra  <amodra@gmail.com>
+
+	PR target/14758
+	* elf32-ppc.c (ppc_elf_reloc_type_lookup): Decode ppc64 _DS
+	bfd_reloc values.  Map to corresponding D-form relocs.
+	(is_insn_ds_form, is_insn_qs_form): New functions.
+	(ppc_elf_relocate_section): Validate insn with DS-form or DQ-form
+	fields using D-form reloc.
+
+2012-10-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* elf32-i386.c (elf_i386_size_dynamic_sections): Replace
+	_GLOBAL_OFFSET_TABLE_ lookup with htab->elf.hgot.
+	* elf64-x86-64.c (elf_x86_64_size_dynamic_sections): Likewise.
+
+2012-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* compress.c (bfd_is_section_compressed): Don't decompress the
+	section.
+
+2012-10-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* bfd-in.h (bfd_elf_stack_segment_size): Declare.
+	* bfd-in2.h: Rebuilt.
+	* elfxx-target.h (elf_backend_stack_align): New.
+	(elfNN_bed): Add it.
+	* elf-bfd.h (struct elf_backend_data): Add stack_align field.
+	* elf.c (bfd_elf_map_sections_to_segments): Pay attention to
+	stack_align and stacksize for PT_GNU_STACK segment.
+	(assign_file_positions_for_non_load_sections): Set p_memsz for
+	PT_GNU_STACK segment.
+	(copy_elf_program_header): Copy PT_GNU_STACK size.
+	* elflink.c (bfd_elf_stack_segment_size): New function, taken from
+	uclinux backends.
+	(bfd_elf_size_dynamic_sections): Determine
+	PT_GNU_STACK requirements after calling backend.  Pay attention to
+	stacksize.
+	* elf32-bfin.c (elf32_bfinfdpic_always_size_sections): Call
+	bfd_elf_stack_segment_size.
+	(elf32_bfinfdpic_modify_program_headers): Delete.
+	(elf32_bfingfdpic_copy_private_bfd_data): Don't copy PT_GNU_STACK
+	here.
+	(elf_backend_stack_align): Override.
+	(elf_backend_modify_program_headers): Don't override.
+	* elf32-frv.c (frvfdpic_always_size_sections): Call
+	bfd_elf_stack_segment_size.
+	(elf32_frvfdpic_modify_program_headers): Delete.
+	(elf32_frvfdpic_copy_private_bfd_data): Don't copy PT_GNU_STACK
+	here.
+	(elf_backend_stack_align): Override.
+	(elf_backend_modify_program_headers): Don't override.
+	* elf32-lm32.c (lm32_elf_always_size_sections): Leave
+	PT_GNU_STACK creation to underlying elf support.  Check
+	__stacksize here for backwards compatibility, and set it if
+	needed.
+	(lm32_elf_modify_segment_map): Delete.
+	(lm32_elf_modify_program_headers): Delete.
+	(elf_backend_stack_align): Override.
+	(elf_backend_modify_segment_map): Don't override.
+	(elf_backend_modify_program_headers): Don't override.
+	* elf32-sh.c (sh_elf_always_size_sections): Call
+	bfd_elf_stack_segment_size.
+	(sh_elf_modify_program_headers): Delete.
+	(sh_elf_copy_private_data): Don't copy PT_GNU_STACK
+	here.
+	(elf_backend_stack_align): Override.
+	(elf_backend_modify_program_headers): Don't override.
+	* elf32-tic6x.c (elf32_tic6x_always_size_sections): Call
+	bfd_elf_stack_segment_size.
+	(elf32_tic6x_modify_program_headers): Delete.
+	(elf32_tic6x_copy_private_data): Delete.
+	(elf_backend_stack_align): Override.
+	(bfd_elf32_bfd_copy_private_bfd_data): Don't override.
+	(elf_backend_modify_program_headers): Don't override.
+
+2012-10-22  Alan Modra  <amodra@gmail.com>
+
+	* cache.c (cache_bmmap): Don't use void* arithmetic.
+
+2012-10-21  Alan Modra  <amodra@gmail.com>
+
+	* compress.c (bfd_cache_section_contents): New function.
+	* bfd-in2.h: Regenerate.
+
+2012-10-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* linker.c (_bfd_generic_link_output_symbols): Handle a
+	no-longer-global symbol entered through a plugin.
+
+2012-10-20  Alan Modra  <amodra@gmail.com>
+
+	* compress.c: Reinstate 2012-10-19 change.
+	(bfd_get_full_section_contents): Don't free unless we alloc.
+	Use proper decompress size.  Delete some vars, rename others.
+
+2012-10-19  Tom Tromey  <tromey@redhat.com>
+
+	* compress.c: Revert previous patch.
+
+2012-10-19  Tom Tromey  <tromey@redhat.com>
+
+	* compress.c (bfd_get_full_section_contents): Don't cache
+	decompressed contents.
+
+2012-10-18  Kai Tietz  <ktietz@redhat.com>
+
+	PR binutils/14067
+	* coff-i386.c (bfd_target): Add section flag SEC_EXCLUDE.
+	Allow BFD_COMPRESS and BFD_DECOMPRESS flags.
+	* coff-x86_64.c: Likewise.
+	* coffcode.h (DOT_ZDEBUG): New define.
+	(sec_to_styp_flags): Check for .zdebug.
+	(styp_to_sec_flags): Likewise.
+	* coffgen.c (make_a_section): Handle .debug_* section
+	compression/decompression flags.
+	* cofflink.c (mark_relocs): Ignore relocations
+	for a section, which isn't marked as used.
+	(_bfd_coff_link_input_bfd): Add support of compressed
+	debug sections.
+	* compress.c (decompress_contents): Loop as long
+	as there is input available and there is room for
+	output.
+	* bfd/pe-arm.c: Add .zdebug_ partial match entry.
+	* pe-i386.c: Likewise.
+	* pe-x86_64.c: Likewise.
+	* peXXigen.c (_bfd_XXi_swap_aouthdr_out): Don't clear all
+	data-directories as this might destroy content.
+
+	* coff-i386.c (_bfd_generic_find_nearest_line_discriminator):
+	define as coff_find_nearest_line_discriminator.
+	* libcoff-in.h (coff_find_nearest_line_discriminator): New
+	* libcoff.h: Regenerated.
+	* coff-x86_64.c: Likewise.
+	* coffgen.c (coff_find_nearest_line_discriminator): New function.
+	prototype.
+
+2012-10-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* coff64-rs6000.c (rs6000coff64_vec): Set _close_and_cleanup
+	field to _bfd_archive_close_and_cleanup.
+	(aix5coff64_vec): Likewise.
+
+2012-10-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* coff-rs6000.c (rs6000coff_vec): Set _close_and_cleanup
+	field to _bfd_archive_close_and_cleanup.
+	(pmac_xcoff_vec): Likewise.
+
+2012-10-16  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* elf64-aarch64.c (elf64_aarch64_tls_howto_table): Fix shift value for
+	R_AARCH64_TLSIE_LD_GOTTPREL_PREL19, R_AARCH64_TLSLE_MOVW_TPREL_G2,
+	R_AARCH64_TLSLE_MOVW_TPREL_G1, R_AARCH64_TLSLE_MOVW_TPREL_G1_NC,
+	R_AARCH64_TLSLE_ADD_TPREL_HI12.
+	(elf64_aarch64_tlsdesc_howto_table): Fix shift value for
+	R_AARCH64_TLSDESC_LD64_PREL19 and R_AARCH64_TLSDESC_OFF_G1.
+	(elf64_aarch64_final_link_relocate): Add signed_addend when resolving
+	AARCH64_TLSLE_*_TPREL_* relocations.
+
+2012-10-16  Alan Modra  <amodra@gmail.com>
+
+	* elf32-xtensa.c (free_section_cache): Renamed from
+	clear_section_cache.  Don't zero cache.
+	(section_cache_section): Remove ineffectual zero of cache.
+	Call init_section_cache instead.
+
+2012-10-15  Doug Evans  <dje@google.com>
+
+	* elf.c (special_sections_d): Add comment.
+
+2012-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (LIBDL): Replace -ldl with @lt_cv_dlopen_libs@.
+	* configure.in (lt_cv_dlopen_libs): AC_SUBST.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
 2012-10-08  Alan Modra  <amodra@gmail.com>
 
 	PR binutils/14662

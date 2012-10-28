@@ -154,6 +154,28 @@ public:
     this->access_from_map_[dst_off].insert(src_id);
   }
 
+  // Add a reference to the code section specified by the .opd entry
+  // at DST_OFF
+  void
+  add_gc_mark(typename elfcpp::Elf_types<size>::Elf_Addr dst_off)
+  {
+    size_t ndx = this->opd_ent_ndx(dst_off);
+    if (ndx >= this->opd_ent_.size())
+      this->opd_ent_.resize(ndx + 1);
+    this->opd_ent_[ndx].gc_mark = true;
+  }
+
+  void
+  process_gc_mark(Symbol_table* symtab)
+  {
+    for (size_t i = 0; i < this->opd_ent_.size(); i++)
+      if (this->opd_ent_[i].gc_mark)
+	{
+	  unsigned int shndx = this->opd_ent_[i].shndx;
+	  symtab->gc()->worklist().push(Section_id(this, shndx));
+	}
+  }
+
   bool
   opd_valid() const
   { return this->opd_valid_; }
@@ -200,7 +222,8 @@ private:
   struct Opd_ent
   {
     unsigned int shndx;
-    bool discard;
+    bool discard : 1;
+    bool gc_mark : 1;
     Offset off;
   };
 
@@ -301,6 +324,10 @@ class Target_powerpc : public Sized_target<size, big_endian>
       }
     return NULL;
   }
+
+  // Provide linker defined save/restore functions.
+  void
+  define_save_restore_funcs(Layout*, Symbol_table*);
 
   // Finalize the sections.
   void
@@ -590,6 +617,32 @@ class Target_powerpc : public Sized_target<size, big_endian>
     // This is set if we should skip the next reloc, which should be a
     // call to __tls_get_addr.
     enum skip_tls call_tls_get_addr_;
+  };
+
+  class Relocate_comdat_behavior
+  {
+   public:
+    // Decide what the linker should do for relocations that refer to
+    // discarded comdat sections.
+    inline Comdat_behavior
+    get(const char* name)
+    {
+      gold::Default_comdat_behavior default_behavior;
+      Comdat_behavior ret = default_behavior.get(name);
+      if (ret == CB_WARNING)
+	{
+	  if (size == 32
+	      && (strcmp(name, ".fixup") == 0
+		  || strcmp(name, ".got2") == 0))
+	    ret = CB_IGNORE;
+	  if (size == 64
+	      && (strcmp(name, ".opd") == 0
+		  || strcmp(name, ".toc") == 0
+		  || strcmp(name, ".toc1") == 0))
+	    ret = CB_IGNORE;
+	}
+      return ret;
+    }
   };
 
   // A class which returns the size required for a relocation type,
@@ -1544,13 +1597,13 @@ class Output_data_plt_powerpc : public Output_section_data_build
   { }
 
   // Add an entry to the PLT.
-  bool
+  void
   add_entry(Symbol*);
 
-  bool
+  void
   add_ifunc_entry(Symbol*);
 
-  bool
+  void
   add_local_ifunc_entry(Sized_relobj_file<size, big_endian>*, unsigned int);
 
   // Return the .rela.plt section data.
@@ -1611,7 +1664,7 @@ class Output_data_plt_powerpc : public Output_section_data_build
 // Add an entry to the PLT.
 
 template<int size, bool big_endian>
-bool
+void
 Output_data_plt_powerpc<size, big_endian>::add_entry(Symbol* gsym)
 {
   if (!gsym->has_plt_offset())
@@ -1625,15 +1678,13 @@ Output_data_plt_powerpc<size, big_endian>::add_entry(Symbol* gsym)
       this->rel_->add_global(gsym, dynrel, this, off, 0);
       off += plt_entry_size;
       this->set_current_data_size(off);
-      return true;
     }
-  return false;
 }
 
 // Add an entry for a global ifunc symbol that resolves locally, to the IPLT.
 
 template<int size, bool big_endian>
-bool
+void
 Output_data_plt_powerpc<size, big_endian>::add_ifunc_entry(Symbol* gsym)
 {
   if (!gsym->has_plt_offset())
@@ -1646,15 +1697,13 @@ Output_data_plt_powerpc<size, big_endian>::add_ifunc_entry(Symbol* gsym)
       this->rel_->add_symbolless_global_addend(gsym, dynrel, this, off, 0);
       off += plt_entry_size;
       this->set_current_data_size(off);
-      return true;
     }
-  return false;
 }
 
 // Add an entry for a local ifunc symbol to the IPLT.
 
 template<int size, bool big_endian>
-bool
+void
 Output_data_plt_powerpc<size, big_endian>::add_local_ifunc_entry(
     Sized_relobj_file<size, big_endian>* relobj,
     unsigned int local_sym_index)
@@ -1670,9 +1719,7 @@ Output_data_plt_powerpc<size, big_endian>::add_local_ifunc_entry(
 					      this, off, 0);
       off += plt_entry_size;
       this->set_current_data_size(off);
-      return true;
     }
-  return false;
 }
 
 static const uint32_t add_0_11_11	= 0x7c0b5a14;
@@ -1696,16 +1743,21 @@ static const uint32_t addis_3_13	= 0x3c6d0000;
 static const uint32_t b			= 0x48000000;
 static const uint32_t bcl_20_31		= 0x429f0005;
 static const uint32_t bctr		= 0x4e800420;
+static const uint32_t blr		= 0x4e800020;
 static const uint32_t blrl		= 0x4e800021;
 static const uint32_t cror_15_15_15	= 0x4def7b82;
 static const uint32_t cror_31_31_31	= 0x4ffffb82;
+static const uint32_t ld_0_1		= 0xe8010000;
+static const uint32_t ld_0_12		= 0xe80c0000;
 static const uint32_t ld_11_12		= 0xe96c0000;
 static const uint32_t ld_11_2		= 0xe9620000;
 static const uint32_t ld_2_1		= 0xe8410000;
 static const uint32_t ld_2_11		= 0xe84b0000;
 static const uint32_t ld_2_12		= 0xe84c0000;
 static const uint32_t ld_2_2		= 0xe8420000;
+static const uint32_t lfd_0_1		= 0xc8010000;
 static const uint32_t li_0_0		= 0x38000000;
+static const uint32_t li_12_0		= 0x39800000;
 static const uint32_t lis_0_0		= 0x3c000000;
 static const uint32_t lis_11		= 0x3d600000;
 static const uint32_t lis_12		= 0x3d800000;
@@ -1714,6 +1766,7 @@ static const uint32_t lwz_11_11		= 0x816b0000;
 static const uint32_t lwz_11_30		= 0x817e0000;
 static const uint32_t lwz_12_12		= 0x818c0000;
 static const uint32_t lwzu_0_12		= 0x840c0000;
+static const uint32_t lvx_0_12_0	= 0x7c0c00ce;
 static const uint32_t mflr_0		= 0x7c0802a6;
 static const uint32_t mflr_11		= 0x7d6802a6;
 static const uint32_t mflr_12		= 0x7d8802a6;
@@ -1723,7 +1776,11 @@ static const uint32_t mtlr_0		= 0x7c0803a6;
 static const uint32_t mtlr_12		= 0x7d8803a6;
 static const uint32_t nop		= 0x60000000;
 static const uint32_t ori_0_0_0		= 0x60000000;
+static const uint32_t std_0_1		= 0xf8010000;
+static const uint32_t std_0_12		= 0xf80c0000;
 static const uint32_t std_2_1		= 0xf8410000;
+static const uint32_t stfd_0_1		= 0xd8010000;
+static const uint32_t stvx_0_12_0	= 0x7c0c01ce;
 static const uint32_t sub_11_11_12	= 0x7d6c5850;
 
 // Write out the PLT.
@@ -2400,6 +2457,335 @@ Output_data_glink<size, big_endian>::do_write(Output_file* of)
   of->write_output_view(off, oview_size, oview);
 }
 
+
+// A class to handle linker generated save/restore functions.
+
+template<int size, bool big_endian>
+class Output_data_save_res : public Output_section_data_build
+{
+ public:
+  Output_data_save_res(Symbol_table* symtab);
+
+ protected:
+  // Write to a map file.
+  void
+  do_print_to_mapfile(Mapfile* mapfile) const
+  { mapfile->print_output_data(this, _("** save/restore")); }
+
+  void
+  do_write(Output_file*);
+
+ private:
+  // The maximum size of save/restore contents.
+  static const unsigned int savres_max = 218*4;
+
+  void
+  savres_define(Symbol_table* symtab,
+		const char *name,
+		unsigned int lo, unsigned int hi,
+		unsigned char* write_ent(unsigned char*, int),
+		unsigned char* write_tail(unsigned char*, int));
+
+  unsigned char *contents_;
+};
+
+template<bool big_endian>
+static unsigned char*
+savegpr0(unsigned char* p, int r)
+{
+  uint32_t insn = std_0_1 + (r << 21) + (1 << 16) - (32 - r) * 8;
+  write_insn<big_endian>(p, insn);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char*
+savegpr0_tail(unsigned char* p, int r)
+{
+  p = savegpr0<big_endian>(p, r);
+  uint32_t insn = std_0_1 + 16;
+  write_insn<big_endian>(p, insn);
+  p = p + 4;
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restgpr0(unsigned char* p, int r)
+{
+  uint32_t insn = ld_0_1 + (r << 21) + (1 << 16) - (32 - r) * 8;
+  write_insn<big_endian>(p, insn);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restgpr0_tail(unsigned char* p, int r)
+{
+  uint32_t insn = ld_0_1 + 16;
+  write_insn<big_endian>(p, insn);
+  p = p + 4;
+  p = restgpr0<big_endian>(p, r);
+  write_insn<big_endian>(p, mtlr_0);
+  p = p + 4;
+  if (r == 29)
+    {
+      p = restgpr0<big_endian>(p, 30);
+      p = restgpr0<big_endian>(p, 31);
+    }
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+savegpr1(unsigned char* p, int r)
+{
+  uint32_t insn = std_0_12 + (r << 21) + (1 << 16) - (32 - r) * 8;
+  write_insn<big_endian>(p, insn);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+savegpr1_tail(unsigned char* p, int r)
+{
+  p = savegpr1<big_endian>(p, r);
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restgpr1(unsigned char* p, int r)
+{
+  uint32_t insn = ld_0_12 + (r << 21) + (1 << 16) - (32 - r) * 8;
+  write_insn<big_endian>(p, insn);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restgpr1_tail(unsigned char* p, int r)
+{
+  p = restgpr1<big_endian>(p, r);
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+savefpr(unsigned char* p, int r)
+{
+  uint32_t insn = stfd_0_1 + (r << 21) + (1 << 16) - (32 - r) * 8;
+  write_insn<big_endian>(p, insn);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+savefpr0_tail(unsigned char* p, int r)
+{
+  p = savefpr<big_endian>(p, r);
+  write_insn<big_endian>(p, std_0_1 + 16);
+  p = p + 4;
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restfpr(unsigned char* p, int r)
+{
+  uint32_t insn = lfd_0_1 + (r << 21) + (1 << 16) - (32 - r) * 8;
+  write_insn<big_endian>(p, insn);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restfpr0_tail(unsigned char* p, int r)
+{
+  write_insn<big_endian>(p, ld_0_1 + 16);
+  p = p + 4;
+  p = restfpr<big_endian>(p, r);
+  write_insn<big_endian>(p, mtlr_0);
+  p = p + 4;
+  if (r == 29)
+    {
+      p = restfpr<big_endian>(p, 30);
+      p = restfpr<big_endian>(p, 31);
+    }
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+savefpr1_tail(unsigned char* p, int r)
+{
+  p = savefpr<big_endian>(p, r);
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restfpr1_tail(unsigned char* p, int r)
+{
+  p = restfpr<big_endian>(p, r);
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+savevr(unsigned char* p, int r)
+{
+  uint32_t insn = li_12_0 + (1 << 16) - (32 - r) * 16;
+  write_insn<big_endian>(p, insn);
+  p = p + 4;
+  insn = stvx_0_12_0 + (r << 21);
+  write_insn<big_endian>(p, insn);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+savevr_tail(unsigned char* p, int r)
+{
+  p = savevr<big_endian>(p, r);
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restvr(unsigned char* p, int r)
+{
+  uint32_t insn = li_12_0 + (1 << 16) - (32 - r) * 16;
+  write_insn<big_endian>(p, insn);
+  p = p + 4;
+  insn = lvx_0_12_0 + (r << 21);
+  write_insn<big_endian>(p, insn);
+  return p + 4;
+}
+
+template<bool big_endian>
+static unsigned char* 
+restvr_tail(unsigned char* p, int r)
+{
+  p = restvr<big_endian>(p, r);
+  write_insn<big_endian>(p, blr);
+  return p + 4;
+}
+
+
+template<int size, bool big_endian>
+Output_data_save_res<size, big_endian>::Output_data_save_res(
+    Symbol_table* symtab)
+  : Output_section_data_build(4),
+    contents_(NULL)
+{
+  this->savres_define(symtab,
+		      "_savegpr0_", 14, 31,
+		      savegpr0<big_endian>, savegpr0_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_restgpr0_", 14, 29,
+		      restgpr0<big_endian>, restgpr0_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_restgpr0_", 30, 31,
+		      restgpr0<big_endian>, restgpr0_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_savegpr1_", 14, 31,
+		      savegpr1<big_endian>, savegpr1_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_restgpr1_", 14, 31,
+		      restgpr1<big_endian>, restgpr1_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_savefpr_", 14, 31,
+		      savefpr<big_endian>, savefpr0_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_restfpr_", 14, 29,
+		      restfpr<big_endian>, restfpr0_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_restfpr_", 30, 31,
+		      restfpr<big_endian>, restfpr0_tail<big_endian>);
+  this->savres_define(symtab,
+		      "._savef", 14, 31,
+		      savefpr<big_endian>, savefpr1_tail<big_endian>);
+  this->savres_define(symtab,
+		      "._restf", 14, 31,
+		      restfpr<big_endian>, restfpr1_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_savevr_", 20, 31,
+		      savevr<big_endian>, savevr_tail<big_endian>);
+  this->savres_define(symtab,
+		      "_restvr_", 20, 31,
+		      restvr<big_endian>, restvr_tail<big_endian>);
+}
+
+template<int size, bool big_endian>
+void
+Output_data_save_res<size, big_endian>::savres_define(
+    Symbol_table* symtab,
+    const char *name,
+    unsigned int lo, unsigned int hi,
+    unsigned char* write_ent(unsigned char*, int),
+    unsigned char* write_tail(unsigned char*, int))
+{
+  size_t len = strlen(name);
+  bool writing = false;
+  char sym[16];
+
+  memcpy(sym, name, len);
+  sym[len + 2] = 0;
+
+  for (unsigned int i = lo; i <= hi; i++)
+    {
+      sym[len + 0] = i / 10 + '0';
+      sym[len + 1] = i % 10 + '0';
+      Symbol* gsym = symtab->lookup(sym);
+      bool refd = gsym != NULL && gsym->is_undefined();
+      writing = writing || refd;
+      if (writing)
+	{
+	  if (this->contents_ == NULL)
+	    this->contents_ = new unsigned char[this->savres_max];
+
+	  off_t value = this->current_data_size();
+	  unsigned char* p = this->contents_ + value;
+	  if (i != hi)
+	    p = write_ent(p, i);
+	  else
+	    p = write_tail(p, i);
+	  off_t cur_size = p - this->contents_;
+	  this->set_current_data_size(cur_size);
+	  if (refd)
+	    symtab->define_in_output_data(sym, NULL, Symbol_table::PREDEFINED,
+					  this, value, cur_size - value,
+					  elfcpp::STT_FUNC, elfcpp::STB_GLOBAL,
+					  elfcpp::STV_HIDDEN, 0, false, false);
+	}
+    }
+}
+
+// Write out save/restore.
+
+template<int size, bool big_endian>
+void
+Output_data_save_res<size, big_endian>::do_write(Output_file* of)
+{
+  const off_t off = this->offset();
+  const section_size_type oview_size =
+    convert_to_section_size_type(this->data_size());
+  unsigned char* const oview = of->get_output_view(off, oview_size);
+  memcpy(oview, this->contents_, oview_size);
+  of->write_output_view(off, oview_size, oview);
+}
+
+
 // Create the glink section.
 
 template<int size, bool big_endian>
@@ -2430,16 +2816,15 @@ Target_powerpc<size, big_endian>::make_plt_entry(
     {
       if (this->iplt_ == NULL)
 	this->make_iplt_section(layout);
-      if (this->iplt_->add_ifunc_entry(gsym))
-	this->glink_->add_entry(object, gsym, reloc);
+      this->iplt_->add_ifunc_entry(gsym);
     }
   else
     {
       if (this->plt_ == NULL)
 	this->make_plt_section(layout);
-      if (this->plt_->add_entry(gsym))
-	this->glink_->add_entry(object, gsym, reloc);
+      this->plt_->add_entry(gsym);
     }
+  this->glink_->add_entry(object, gsym, reloc);
 }
 
 // Make a PLT entry for a local STT_GNU_IFUNC symbol.
@@ -2454,8 +2839,8 @@ Target_powerpc<size, big_endian>::make_local_ifunc_plt_entry(
   if (this->iplt_ == NULL)
     this->make_iplt_section(layout);
   unsigned int r_sym = elfcpp::elf_r_sym<size>(reloc.get_r_info());
-  if (this->iplt_->add_local_ifunc_entry(relobj, r_sym))
-    this->glink_->add_entry(relobj, r_sym, reloc);
+  this->iplt_->add_local_ifunc_entry(relobj, r_sym);
+  this->glink_->add_entry(relobj, r_sym, reloc);
 }
 
 // Return the number of entries in the PLT.
@@ -3052,10 +3437,19 @@ Target_powerpc<size, big_endian>::Scan::local(
 	const tls::Tls_optimization tls_type = target->optimize_tls_ie(true);
 	if (tls_type == tls::TLSOPT_NONE)
 	  {
-	    Output_data_got_powerpc<size, big_endian>* got
-	      = target->got_section(symtab, layout);
 	    unsigned int r_sym = elfcpp::elf_r_sym<size>(reloc.get_r_info());
-	    got->add_local_tls(object, r_sym, GOT_TYPE_TPREL);
+	    if (!object->local_has_got_offset(r_sym, GOT_TYPE_TPREL))
+	      {
+		Output_data_got_powerpc<size, big_endian>* got
+		  = target->got_section(symtab, layout);
+		unsigned int off = got->add_constant(0);
+		object->set_local_got_offset(r_sym, GOT_TYPE_TPREL, off);
+
+		Reloc_section* rela_dyn = target->rela_dyn_section(layout);
+		rela_dyn->add_symbolless_local_addend(object, r_sym,
+						      elfcpp::R_POWERPC_TPREL,
+						      got, off, 0);
+	      }
 	  }
 	else if (tls_type == tls::TLSOPT_TO_LE)
 	  {
@@ -3370,11 +3764,26 @@ Target_powerpc<size, big_endian>::Scan::global(
 	  }
 	else if (tls_type == tls::TLSOPT_TO_IE)
 	  {
-	    Output_data_got_powerpc<size, big_endian>* got
-	      = target->got_section(symtab, layout);
-	    got->add_global_with_rel(gsym, GOT_TYPE_TPREL,
-				     target->rela_dyn_section(layout),
-				     elfcpp::R_POWERPC_TPREL);
+	    if (!gsym->has_got_offset(GOT_TYPE_TPREL))
+	      {
+		Output_data_got_powerpc<size, big_endian>* got
+		  = target->got_section(symtab, layout);
+		Reloc_section* rela_dyn = target->rela_dyn_section(layout);
+		if (gsym->is_undefined()
+		    || gsym->is_from_dynobj())
+		  {
+		    got->add_global_with_rel(gsym, GOT_TYPE_TPREL, rela_dyn,
+					     elfcpp::R_POWERPC_TPREL);
+		  }
+		else
+		  {
+		    unsigned int off = got->add_constant(0);
+		    gsym->set_got_offset(GOT_TYPE_TPREL, off);
+		    unsigned int dynrel = elfcpp::R_POWERPC_TPREL;
+		    rela_dyn->add_symbolless_global_addend(gsym, dynrel,
+							   got, off, 0);
+		  }
+	      }
 	  }
 	else if (tls_type == tls::TLSOPT_TO_LE)
 	  {
@@ -3436,17 +3845,26 @@ Target_powerpc<size, big_endian>::Scan::global(
 	const tls::Tls_optimization tls_type = target->optimize_tls_ie(final);
 	if (tls_type == tls::TLSOPT_NONE)
 	  {
-	    Output_data_got_powerpc<size, big_endian>* got
-	      = target->got_section(symtab, layout);
-	    if (!gsym->final_value_is_known()
-		&& (gsym->is_from_dynobj()
-		    || gsym->is_undefined()
-		    || gsym->is_preemptible()))
-	      got->add_global_with_rel(gsym, GOT_TYPE_TPREL,
-				       target->rela_dyn_section(layout),
-				       elfcpp::R_POWERPC_TPREL);
-	    else
-	      got->add_global_tls(gsym, GOT_TYPE_TPREL);
+	    if (!gsym->has_got_offset(GOT_TYPE_TPREL))
+	      {
+		Output_data_got_powerpc<size, big_endian>* got
+		  = target->got_section(symtab, layout);
+		Reloc_section* rela_dyn = target->rela_dyn_section(layout);
+		if (gsym->is_undefined()
+		    || gsym->is_from_dynobj())
+		  {
+		    got->add_global_with_rel(gsym, GOT_TYPE_TPREL, rela_dyn,
+					     elfcpp::R_POWERPC_TPREL);
+		  }
+		else
+		  {
+		    unsigned int off = got->add_constant(0);
+		    gsym->set_got_offset(GOT_TYPE_TPREL, off);
+		    unsigned int dynrel = elfcpp::R_POWERPC_TPREL;
+		    rela_dyn->add_symbolless_global_addend(gsym, dynrel,
+							   got, off, 0);
+		  }
+	      }
 	  }
 	else if (tls_type == tls::TLSOPT_TO_LE)
 	  {
@@ -3506,6 +3924,7 @@ Target_powerpc<size, big_endian>::gc_process_relocs(
 	  p->second.clear();
 	}
       ppc_object->access_from_map()->clear();
+      ppc_object->process_gc_mark(symtab);
       // Don't look at .opd relocs as .opd will reference everything.
       return;
     }
@@ -3542,7 +3961,9 @@ Target_powerpc<size, big_endian>::do_gc_add_reference(
 {
   Powerpc_relobj<size, big_endian>* ppc_object
     = static_cast<Powerpc_relobj<size, big_endian>*>(dst_obj);
-  if (size == 64 && dst_shndx == ppc_object->opd_shndx())
+  if (size == 64
+      && !ppc_object->is_dynamic()
+      && dst_shndx == ppc_object->opd_shndx())
     {
       if (ppc_object->opd_valid())
 	{
@@ -3578,8 +3999,13 @@ Target_powerpc<size, big_endian>::do_gc_mark_symbol(
 	{
 	  Sized_symbol<size>* gsym = symtab->get_sized_symbol<size>(sym);
 	  Address dst_off = gsym->value();
-	  unsigned int dst_indx = ppc_object->get_opd_ent(dst_off);
-	  symtab->gc()->worklist().push(Section_id(ppc_object, dst_indx));
+	  if (ppc_object->opd_valid())
+	    {
+	      unsigned int dst_indx = ppc_object->get_opd_ent(dst_off);
+	      symtab->gc()->worklist().push(Section_id(ppc_object, dst_indx));
+	    }
+	  else
+	    ppc_object->add_gc_mark(dst_off);
 	}
     }
 }
@@ -3613,6 +4039,20 @@ Target_powerpc<size, big_endian>::scan_relocs(
 
   if (size == 32)
     {
+      // Define a weak hidden _GLOBAL_OFFSET_TABLE_ to ensure it isn't
+      // seen as undefined when scanning relocs (and thus requires
+      // non-relative dynamic relocs).  The proper value will be
+      // updated later.
+      Symbol *gotsym = symtab->lookup("_GLOBAL_OFFSET_TABLE_", NULL);
+      if (gotsym != NULL && gotsym->is_undefined())
+	symtab->define_in_output_data("_GLOBAL_OFFSET_TABLE_", NULL,
+				      Symbol_table::PREDEFINED,
+				      this->got_section(symtab, layout), 0, 0,
+				      elfcpp::STT_OBJECT,
+				      elfcpp::STB_WEAK,
+				      elfcpp::STV_HIDDEN, 0,
+				      false, false);
+
       static Output_data_space* sdata;
 
       // Define _SDA_BASE_ at the start of the .sdata section.
@@ -3679,6 +4119,22 @@ class Global_symbol_visitor_opd
   }
 };
 
+template<int size, bool big_endian>
+void
+Target_powerpc<size, big_endian>::define_save_restore_funcs(
+    Layout* layout,
+    Symbol_table* symtab)
+{
+  if (size == 64)
+    {
+      Output_data_save_res<64, big_endian>* savres
+	= new Output_data_save_res<64, big_endian>(symtab);
+      layout->add_output_section_data(".text", elfcpp::SHT_PROGBITS,
+				      elfcpp::SHF_ALLOC | elfcpp::SHF_EXECINSTR,
+				      savres, ORDER_TEXT, false);
+    }
+}
+
 // Finalize the sections.
 
 template<int size, bool big_endian>
@@ -3722,6 +4178,7 @@ Target_powerpc<size, big_endian>::do_finalize_sections(
     {
       typedef Global_symbol_visitor_opd<big_endian> Symbol_visitor;
       symtab->for_all_symbols<64, Symbol_visitor>(Symbol_visitor());
+      this->define_save_restore_funcs(layout, symtab);
     }
 
   // Fill in some more dynamic tags.
@@ -3780,6 +4237,9 @@ Target_powerpc<size, big_endian>::symval_for_branch(
   // If the symbol is defined in an opd section, ie. is a function
   // descriptor, use the function descriptor code entry address
   Powerpc_relobj<size, big_endian>* symobj = object;
+  if (gsym != NULL
+      && gsym->source() != Symbol::FROM_OBJECT)
+    return value;
   if (gsym != NULL)
     symobj = static_cast<Powerpc_relobj<size, big_endian>*>(gsym->object());
   unsigned int shndx = symobj->opd_shndx();
@@ -4391,10 +4851,10 @@ Target_powerpc<size, big_endian>::Relocate::relocate(
       break;
 
     case elfcpp::R_POWERPC_ADDR32:
-    case elfcpp::R_POWERPC_REL32:
       status = Reloc::addr32(view, value, overflow);
       break;
 
+    case elfcpp::R_POWERPC_REL32:
     case elfcpp::R_POWERPC_UADDR32:
       status = Reloc::addr32_u(view, value, overflow);
       break;
@@ -4617,48 +5077,13 @@ Target_powerpc<size, big_endian>::relocate_section(
 {
   typedef Target_powerpc<size, big_endian> Powerpc;
   typedef typename Target_powerpc<size, big_endian>::Relocate Powerpc_relocate;
+  typedef typename Target_powerpc<size, big_endian>::Relocate_comdat_behavior
+    Powerpc_comdat_behavior;
 
   gold_assert(sh_type == elfcpp::SHT_RELA);
 
-  unsigned char *opd_rel = NULL;
-  Powerpc_relobj<size, big_endian>* const object
-    = static_cast<Powerpc_relobj<size, big_endian>*>(relinfo->object);
-  if (size == 64
-      && relinfo->data_shndx == object->opd_shndx())
-    {
-      // Rewrite opd relocs, omitting those for discarded sections
-      // to silence gold::relocate_section errors.
-      const int reloc_size
-	= Reloc_types<elfcpp::SHT_RELA, size, big_endian>::reloc_size;
-      opd_rel = new unsigned char[reloc_count * reloc_size];
-      const unsigned char* rrel = prelocs;
-      unsigned char* wrel = opd_rel;
-
-      for (size_t i = 0;
-	   i < reloc_count;
-	   ++i, rrel += reloc_size, wrel += reloc_size)
-	{
-	  typename Reloc_types<elfcpp::SHT_RELA, size, big_endian>::Reloc
-	    reloc(rrel);
-	  typename elfcpp::Elf_types<size>::Elf_WXword r_info
-	    = reloc.get_r_info();
-	  unsigned int r_type = elfcpp::elf_r_type<size>(r_info);
-	  Address r_off = reloc.get_r_offset();
-	  if (r_type == elfcpp::R_PPC64_TOC)
-	    r_off -= 8;
-	  bool is_discarded = object->get_opd_discard(r_off);
-
-	  // Reloc number is reported in some errors, so keep all relocs.
-	  if (is_discarded)
-	    memset(wrel, 0, reloc_size);
-	  else
-	    memcpy(wrel, rrel, reloc_size);
-	}
-      prelocs = opd_rel;
-    }
-
   gold::relocate_section<size, big_endian, Powerpc, elfcpp::SHT_RELA,
-			 Powerpc_relocate>(
+			 Powerpc_relocate, Powerpc_comdat_behavior>(
     relinfo,
     this,
     prelocs,
@@ -4669,9 +5094,6 @@ Target_powerpc<size, big_endian>::relocate_section(
     address,
     view_size,
     reloc_symbol_changes);
-
-  if (opd_rel != NULL)
-    delete[] opd_rel;
 }
 
 class Powerpc_scan_relocatable_reloc

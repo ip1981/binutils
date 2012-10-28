@@ -1,3 +1,87 @@
+2012-10-27  James Lemke  <jwlemke@codesourcery.com>
+
+	* gas/m68k/all.exp: Exclude pr11676 for fido-*-*.
+
+2012-10-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gas/testsuite/gas/s390/zarch-z10.d: Refreshed.
+	* gas/testsuite/gas/s390/zarch-z10.s: Refreshed.
+	* gas/testsuite/gas/s390/zarch-z196.d: Refreshed.
+	* gas/testsuite/gas/s390/zarch-z196.s: Refreshed.
+	* gas/testsuite/gas/s390/zarch-z9-109.d: Refreshed.
+	* gas/testsuite/gas/s390/zarch-z990.d: Refreshed.
+	* gas/testsuite/gas/s390/zarch-z990.s: Refreshed.
+	* gas/testsuite/gas/s390/zarch-zEC12.d: Refreshed.
+	* gas/testsuite/gas/s390/zarch-zEC12.s: Refreshed.
+
+2012-10-26  Christian Groessler  <chris@groessler.org>
+
+	* gas/z8k/z8k.exp: Run translate-ops test.
+	* gas/z8k/translate-ops.s: New file.
+	* gas/z8k/translate-ops.d: New file.
+
+2012-10-26  Alan Modra  <amodra@gmail.com>
+
+	* gas/ppc/power4.s: Fix invalid lq offsets.
+	* gas/ppc/power4.d: Update.
+
+2012-10-24  Roland McGrath  <mcgrathr@google.com>
+
+	* gas/i386/rex.s: Add test of REX prefix before fsave (i.e. fwait).
+	* gas/i386/rex.d: Update.
+
+2012-10-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gas/ppc/altivec.s <vcfpsxws>: Fix opcode spelling.
+
+2012-10-15  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gas/aarch64/sysreg-1.s: Add tests of rmr_el1, rmr_el2 and rmr_el3.
+	* gas/aarch64/sysreg-1.d: Update.
+	* gas/aarch64/illegal.s: Add tests of daifset and daifclr.
+	* gas/aarch64/illegal.d: Update.
+
+2012-10-15  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gas/aarch64/illegal-2.s: Add test case.
+	* gas/aarch64/illegal-2.l: Update.
+
+2012-10-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gas/hppa/basic/fmemLRbug.s: Remove double load and store instructions
+	which reference the right half of a floating point register.
+	* gas/hppa/basic/basic.exp: Adjust expected results.
+
+2012-10-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gas/hppa/basic/unit.s: Remove uxor instructions with unit condition
+	involving a carry.
+	* gas/hppa/basic/unit2.s: Likewise.
+	* gas/hppa/basic/basic.exp: Adjusted expected.
+
+2012-10-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gas/arm/armv8-a+fp.d: Use preferred form of vrint instruction
+	variants for disassembly.
+	* gas/arm/armv8-a+fp.s: Likewise.
+	* gas/arm/armv8-a+simd.d: Likewise.
+	* gas/arm/armv8-a+simd.s: Likewise.
+
+2012-10-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gas/arm/ldgesb-bad.d: New file.
+	* gas/arm/ldgesb-bad.l: Likewise.
+	* gas/arm/ldgesb-bad.s: Likewise.
+	* gas/arm/ldgesh-bad.d: Likewise.
+	* gas/arm/ldgesh-bad.l: Likewise.
+	* gas/arm/ldgesh-bad.s: Likewise.
+	* gas/arm/ldsgeb.d: Likewise.
+	* gas/arm/ldsgeb.s: Likewise.
+	* gas/arm/ldsgeb.l: Likewise.
+	* gas/arm/ldsgeh.d: Likewise.
+	* gas/arm/ldsgeh.s: Likewise.
+	* gas/arm/ldsgeh.l: Likewise.
+
 2012-10-09  Nagajyothi Eggone  <nagajyothi.eggone@amd.com>
 
 	* gas/i386/i386.exp: Run bdver3 test cases.

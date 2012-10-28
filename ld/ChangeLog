@@ -1,3 +1,50 @@
+2012-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ld.h (command_line): Remove
+	disable_target_specific_optimizations.
+	(RELAXATION_DISABLED_BY_DEFAULT): Removed.
+	(RELAXATION_DISABLED_BY_USER): Likewise.
+	(RELAXATION_ENABLED): Likewise.
+	(DISABLE_RELAXATION): Likewise.
+	(ENABLE_RELAXATION): Likewise.
+
+	* ldmain.c (main): Updated.
+
+	* ldmain.h (RELAXATION_DISABLED_BY_DEFAULT): New macro.
+	(RELAXATION_DISABLED_BY_USER): Likewise.
+	(RELAXATION_ENABLED): Likewise.
+	(DISABLE_RELAXATION): Likewise.
+	(ENABLE_RELAXATION): Likewise.
+
+2012-10-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* ld.texinfo (stack-size): New option.
+	* emultempl/elf32.em: Add stack-size option.
+
+2012-10-22  Jan Beich  <jbeich@tormail.org>
+	    Alan Modra  <amodra@gmail.com>
+
+	PR ld/14426
+	* ldlex.h (option_values): Add OPTION_IGNORE_UNRESOLVED_SYMBOL.
+	* lexsup.c (parse_args): Likewise.
+	(ld_options): Describe --ignore-unresolved-symbol.
+	* ldmain.h (add_ignoresym): Declare.
+	* ldmain.c (add_ignoresym): New function, extracted from..
+	(undefined_symbol): ..here.  Return if the symbol is in ignore_hash.
+	(constructor_callback): Don't use global link_info here.
+	(reloc_overflow): Likewise.
+
+2012-10-22  Alan Modra  <amodra@gmail.com>
+
+	* plugin.c (plugin_load_plugins): Warning fix.
+
+2012-10-18  Kai Tietz  <ktietz@redhat.com>
+
+	PR binutils/14067
+	* NEWS: Menition new feature.
+	* scripttempl/pep.sc: Add zdebug sections.
+	* scripttempl/pe.sc: L
+
 2012-09-19  Steve Ellcey  <sellcey@mips.com>
 
 	* configure.tgt: Add mips*-mti-elf* target.

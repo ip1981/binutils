@@ -1,3 +1,27 @@
+2012-10-26  Shinichiro Hamaji  <shinichiro.hamaji@gmail.com>
+
+	* dwarf2.h (DW_AT_APPLE_optimized, DW_AT_APPLE_flags)
+	(DW_AT_APPLE_isa, DW_AT_APPLE_block)
+	(DW_AT_APPLE_major_runtime_vers, DW_AT_APPLE_runtime_class)
+	(DW_AT_APPLE_omit_frame_ptr, DW_AT_APPLE_property_name)
+	(DW_AT_APPLE_property_getter, DW_AT_APPLE_property_setter)
+	(DW_AT_APPLE_property_attribute, DW_AT_APPLE_objc_complete_type)
+	(DW_AT_APPLE_property, DW_OP_GNU_entry_value): New macros.
+
+2012-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bfdlink.h (bfd_link_info): Add
+	disable_target_specific_optimizations.
+
+2012-10-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* bfdlink.h (struct bfd_link_info): Add stacksize option.
+
+2012-10-22  Jan Beich  <jbeich@tormail.org>
+
+	PR ld/14426
+	* bfdlink.h (bfd_link_info): Add ignore_hash.
+
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add

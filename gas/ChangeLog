@@ -1,3 +1,53 @@
+2012-10-26  Alan Modra  <amodra@gmail.com>
+
+	PR target/14758
+	* config/tc-ppc.c (ppc_setup_opcodes): Fix comment.
+	(md_assemble): Translate to _DS relocs for ppc32 as well as ppc64.
+	(tc_gen_reloc): Handle _DS relocs in ppc32 mode.
+
+2012-10-22  Simon Baldwin  <simonb@google.com>
+
+	* as.c (dump_statistics): Compute data size as the delta between
+	current sbrk(0) and start_sbrk.
+	* (main): Set start_sbrk to sbrk(0) on entry.
+
+2012-10-18  Kai Tietz  <ktietz@redhat.com>
+
+	* config/obj-coff.c: Add include of struc-symbol.h header.
+	(coff_frob_symbol): Check that function-aux entries are generated for
+	defined symbols only.
+
+	* doc/as.texinfo: Add missing documentation about section flag
+	exclude.
+
+2012-10-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/tc-hppa.c (pa_get_number): New.
+	(pa_get_absolute_expression): Simplify.
+	(pa_ip): Use pa_get_number instead of pa_get_absolute_expression
+	to get SOP, SFU and COPR identifiers.
+
+	* config/tc-hppa.c (pa_ip): Reject double floating point stores and
+	loads that reference the right half of a floating point register.
+
+2012-10-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/tc-hppa.c (pa_ip): Limit unit conditions for uxor to those
+	not involving a carry.
+
+2012-10-12  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/as.texinfo (-mpwr4, -mpwr7): Fix option name typos.
+
+2012-10-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/tc-arm.c: Change condition code insertion for
+	lds[hb] instructions from after the 2nd character to after the 3rd.
+	(tCM): Remove macro.
+	(TxCM): Likewise.
+	(TxCM_): Likewise.
+	(TCM): Likewise.
+
 2012-10-09  Nagajyothi Eggone  <nagajyothi.eggone@amd.com>
 
 	* config/tc-i386.c (cpu_arch): Add CPU_BDVER3_FLAGS.

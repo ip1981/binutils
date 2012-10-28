@@ -1,3 +1,62 @@
+2012-10-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* s390-mkopc.c: Accept empty lines in s390-opc.txt.
+	* s390-opc.c: Add M_20OPT field. New instruction formats RRF_RURR2 and RRF_RMRR.
+	* s390-opc.txt: Add new instructions.  New instruction type for lptea.
+
+2012-10-26  Christian Groessler  <chris@groessler.org>
+
+	* z8kgen.c (struct op): Fix encoding for translate opcodes (trdb,
+	trdrb, trib, trirb, trtdb, trtdrb, trtib, trtirb).  Remove
+	non-existing opcode trtrb.
+	* z8k-opc.h: Regenerate.
+
+2012-10-26  Alan Modra  <amodra@gmail.com>
+
+	* ppc-opc (powerpc_opcodes): "lfdp" and "stfdp" use DS offset.
+
+2012-10-24  Roland McGrath  <mcgrathr@google.com>
+
+	* i386-dis.c (ckprefix): When bailing out for fwait with prefixes,
+	set rex_used to rex.
+
+2012-10-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* ppc-opc.c (powerpc_opcodes) <vcfpsxws>: Fix opcode spelling.
+
+2012-10-18  Tom Tromey  <tromey@redhat.com>
+
+	* tic54x-dis.c (print_instruction): Don't use K&R style.
+	(print_parallel_instruction, sprint_dual_address)
+	(sprint_indirect_address, sprint_direct_address, sprint_mmr)
+	(sprint_cc2, sprint_condition): Likewise.
+
+2012-10-18  Kai Tietz  <ktietz@redhat.com>
+
+	* aarch64-asm.c (aarch64_ins_ldst_reglist): Initialize
+	value with a default.
+	(do_special_encoding): Likewise.
+	(aarch64_ins_ldst_elemlist): Pre-initialize QSsize, and opcodeh2
+	variables with default.
+	* arc-dis.c (write_comments_): Don't use strncat due
+	size of state->commentBuffer pointer isn't predictable.
+
+2012-10-15  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* aarch64-opc.c (aarch64_sys_regs): Add rmr_el1, rmr_el2 and
+	rmr_el3; remove daifset and daifclr.
+
+2012-10-15  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* aarch64-opc.c (operand_general_constraint_met_p): Change to check
+	the alignment of addr.offset.imm instead of that of shifter.amount for
+	operand type AARCH64_OPND_ADDR_UIMM12.
+
+2012-10-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* arm-dis.c: Use preferred form of vrint instruction variants
+	for disassembly.
+
 2012-10-09  Nagajyothi Eggone  <nagajyothi.eggone@amd.com>
 
 	* i386-gen.c (cpu_flag_init): Add CPU_BDVER3_FLAGS.

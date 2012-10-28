@@ -287,11 +287,11 @@ main (int argc, char **argv)
   config.make_executable = TRUE;
   config.magic_demand_paged = TRUE;
   config.text_read_only = TRUE;
+  link_info.disable_target_specific_optimizations = -1;
 
   command_line.warn_mismatch = TRUE;
   command_line.warn_search_mismatch = TRUE;
   command_line.check_section_addresses = -1;
-  command_line.disable_target_specific_optimizations = -1;
 
   /* We initialize DEMANGLING based on the environment variable
      COLLECT_NO_DEMANGLE.  The gcc collect2 program will demangle the
@@ -670,6 +670,23 @@ add_ysym (const char *name)
     einfo (_("%P%F: bfd_hash_lookup failed: %E\n"));
 }
 
+void
+add_ignoresym (struct bfd_link_info *info, const char *name)
+{
+  if (info->ignore_hash == NULL)
+    {
+      info->ignore_hash = xmalloc (sizeof (struct bfd_hash_table));
+      if (! bfd_hash_table_init_n (info->ignore_hash,
+				   bfd_hash_newfunc,
+				   sizeof (struct bfd_hash_entry),
+				   61))
+	einfo (_("%P%F: bfd_hash_table_init failed: %E\n"));
+    }
+
+  if (bfd_hash_lookup (info->ignore_hash, name, TRUE, TRUE) == NULL)
+    einfo (_("%P%F: bfd_hash_lookup failed: %E\n"));
+}
+
 /* Record a symbol to be wrapped, from the --wrap option.  */
 
 void
@@ -964,7 +981,7 @@ multiple_definition (struct bfd_link_info *info,
   if (RELAXATION_ENABLED)
     {
       einfo (_("%P: Disabling relaxation: it will not work with multiple definitions\n"));
-      command_line.disable_target_specific_optimizations = -1;
+      link_info.disable_target_specific_optimizations = -1;
     }
 
   return TRUE;
@@ -1118,7 +1135,7 @@ constructor_callback (struct bfd_link_info *info,
 
   /* Ensure that BFD_RELOC_CTOR exists now, so that we can give a
      useful error message.  */
-  if (bfd_reloc_type_lookup (link_info.output_bfd, BFD_RELOC_CTOR) == NULL
+  if (bfd_reloc_type_lookup (info->output_bfd, BFD_RELOC_CTOR) == NULL
       && (info->relocatable
 	  || bfd_reloc_type_lookup (abfd, BFD_RELOC_CTOR) == NULL))
     einfo (_("%P%F: BFD backend error: BFD_RELOC_CTOR unsupported\n"));
@@ -1255,7 +1272,7 @@ warning_find_reloc (bfd *abfd, asection *sec, void *iarg)
 /* This is called when an undefined symbol is found.  */
 
 static bfd_boolean
-undefined_symbol (struct bfd_link_info *info ATTRIBUTE_UNUSED,
+undefined_symbol (struct bfd_link_info *info,
 		  const char *name,
 		  bfd *abfd,
 		  asection *section,
@@ -1267,25 +1284,14 @@ undefined_symbol (struct bfd_link_info *info ATTRIBUTE_UNUSED,
 
 #define MAX_ERRORS_IN_A_ROW 5
 
+  if (info->ignore_hash != NULL
+      && bfd_hash_lookup (info->ignore_hash, name, FALSE, FALSE) != NULL)
+    return TRUE;
+
   if (config.warn_once)
     {
-      static struct bfd_hash_table *hash;
-
       /* Only warn once about a particular undefined symbol.  */
-      if (hash == NULL)
-	{
-	  hash = (struct bfd_hash_table *)
-              xmalloc (sizeof (struct bfd_hash_table));
-	  if (!bfd_hash_table_init (hash, bfd_hash_newfunc,
-				    sizeof (struct bfd_hash_entry)))
-	    einfo (_("%F%P: bfd_hash_table_init failed: %E\n"));
-	}
-
-      if (bfd_hash_lookup (hash, name, FALSE, FALSE) != NULL)
-	return TRUE;
-
-      if (bfd_hash_lookup (hash, name, TRUE, TRUE) == NULL)
-	einfo (_("%F%P: bfd_hash_lookup failed: %E\n"));
+      add_ignoresym (info, name);
     }
 
   /* We never print more than a reasonable number of errors in a row
@@ -1363,7 +1369,7 @@ int overflow_cutoff_limit = 10;
 /* This is called when a reloc overflows.  */
 
 static bfd_boolean
-reloc_overflow (struct bfd_link_info *info ATTRIBUTE_UNUSED,
+reloc_overflow (struct bfd_link_info *info,
 		struct bfd_link_hash_entry *entry,
 		const char *name,
 		const char *reloc_name,
@@ -1402,7 +1408,7 @@ reloc_overflow (struct bfd_link_info *info ATTRIBUTE_UNUSED,
 		 reloc_name, entry->root.string,
 		 entry->u.def.section,
 		 entry->u.def.section == bfd_abs_section_ptr
-		 ? link_info.output_bfd : entry->u.def.section->owner);
+		 ? info->output_bfd : entry->u.def.section->owner);
 	  break;
 	default:
 	  abort ();
